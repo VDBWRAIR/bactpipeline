@@ -1,0 +1,24 @@
+For paired-end sequences, after trimming, the two ends are not "synchronized": 
+some pairs will get one end passed while the other end failed.  A simple and 
+not-optimized script is provide to re-synchronize the reads.
+
+The perl program is in the same site as paired_end_trim.pl.  To use it, btrim 
+should be used using the "-s" option to write a summary file for each end.
+
+For example:
+
+trim -a 25 -q -t s_8_1_sequence.txt -o s_8_1.25 -s s_8_1.sum25
+trim -a 25 -q -t s_8_2_sequence.txt -o s_8_2.25 -s s_8_2.sum25
+paired_end_trim.pl s_8_1.sum25 s_8_2.sum25 s_8_1.25 s_8_2.25
+
+Four files will be created: two files (*.pe) are for reads that both ends 
+passed trimming.  The reads are in the same order so they can be used 
+as pe reads.
+
+Another two files (*.se) are for those reads that only one end passed trimming.
+They can be used as se reads.
+
+
+
+Yong Kong
+Yale University

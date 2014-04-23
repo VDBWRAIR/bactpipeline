@@ -1,0 +1,64 @@
+Btrim is a fast and lightweight tool to trim adapters and low quality
+regions in reads from ultra high-throughput next-generation sequencing
+machines.  Two Linux executables can be downloaded: Btrim32 for 32-bit
+machine, and Btrim64 for 64-bit machine.  If the program does not run
+on your Linux machine, try btrim32-static or btrim64-static.
+
+An executable for Mac (btrim_mac) can also be downloaded. 
+
+Options:
+
+Btrim -q -p <pattern file> -t <fastq file> -o <trim file> [-u 5'-error -v 3'-error -l minlen -b <5'-cut> -e <3'-cut> -w <window> -a <average> -f <5'-trim> -I]
+
+Required for pattern trimming:
+        -p <pattern file>       each line contains one pair of 5'- and 3'-adaptors; ignored if -q in effect
+        -t <sequence file>      fastq file to be trimmed
+        -o <output file>        fastq file of trimmed sequences
+
+Required for quality trimming (-q in effect):
+        -t <sequence file>      fastq file to be trimmed
+        -o <output file>        fastq file of trimmed sequences
+
+Optional:
+        -q      toggle to quality trimming [default=adaptor trimming]
+        -3      3'-adaptor trimming only [default=off]
+        -P      pass if no adaptor is found [default=off]
+        -Q      do a quality trimming even if adaptor is found [default=off]
+        -s <summary file>       detailed trimming info for each sequence
+        -u <5'-error>   maximum number of errors in 5'-adaptor [default=3]
+        -v <3'-error>   maximum number of errors in 3'-adaptor [default=4]
+        -l <minimal length>     minimal insert size [default=25]
+        -b <5'-range>   the length of sequence to look for 5'-adaptor at the beginning of the sequence [default=1.3 x adaptor length]
+        -e <3'-range>   the starting position to look for 3'-adaptor at the end of the sequence [default: the 5'-trimming point]
+        -w <window size>        size of moving window for quality trimming [default=5]
+        -a <average quality>    cutoff for average quality scores within the moving window for quality trimming [default=15]
+        -f <5'-trim>    number of bases to be trimmed at 5'-end [default=0]
+        -I      toggle to case sensitive search [default=case insensitive]
+        -c      toggle to check fastq file [default=no check]
+        -S      toggle to Sanger fastq format [default=Illumina]
+        -B      barcode assignment
+
+
+Examples:
+
+(1) Btrim64 -t input_sequence.txt -p adapters.txt -o output.txt
+    Trim FASTQ file "input_sequence.txt" using the adapters in "adapters.txt",
+    write the output in "output.txt".  Each line in "adapters.txt" contains
+    two tab-delimited columns: the first is 5'-adapter, the second 3'-adapter.
+
+(2) Btrim64 -p adapters.txt -t s_1_sequence.txt -o s_1.out -s s_1.sum -P -3 -Q -v 1 
+    Trim FASTQ file "s_1_sequence.txt" using the adapters in "adapters.txt",
+    write the output in "s_1.out" and detailed trimming information in "s_1.sum".
+    Only 3'-adaptor will be used (the 5'-adapter in "adapters.txt" are ignored),
+    and the maximum number of errors in 3'-adaptor is set as 1.  No matter whether
+    the adapters are found or not, the read is passed to quality trimming (-P -Q).
+
+
+Yong Kong
+Yale University
+
+Reference: Kong, Y (2011) Btrim: A fast, lightweight adapter and quality trimming program for next-generation sequencing technologies, Genomics, 98, 152-153.
+http://dx.doi.org/10.1016/j.ygeno.2011.05.009
+
+Contact: yong.kong@yale.edu
+
