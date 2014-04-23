@@ -1,0 +1,13 @@
+#!/bin/bash
+MY_PATH=$(dirname $(readlink -f $0))
+BASE_PATH=$(readlink -f $MY_PATH/..)
+
+if [ -z "$1" -a "$MY_PATH" == "/opt/454/apps/amplicons/libexec" -a -x /opt/454/bin/getVersions ] ; then
+   /opt/454/bin/getVersions
+else
+   echo "LinuxCAmplicon 2.8 (v20120625_0815)"
+   echo "AppJava [Amplicons] 2.8 (v20120731_1452)"
+   
+   # sffinfo
+   [ -x "${BASE_PATH}/bin/sffinfo" ] && "${BASE_PATH}/bin/sffinfo" --version | grep sffinfo || :;
+fi

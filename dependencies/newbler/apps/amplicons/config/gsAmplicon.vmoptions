@@ -1,0 +1,3 @@
+-client
+-Xmx750M
+-XX:MaxPermSize=128M

@@ -1,0 +1,8 @@
+# Define a prototype Multiplexer for use with the One-Way Blueprint
+# and the Extended set of 454 MIDs
+create multiplexer Prototype_One-Way_with_454ExtendedMIDs_Multiplexer \
+	-annotation "Prototype Multiplexer for use with the One-Way Reads Design Blueprint and using the Extended set of 454 MIDs.  In order to use, optionally duplicate and rename this prototype and then fill out the MID-Sample associations" \
+	-encoding primer1
+
+associate -multiplexer Prototype_One-Way_with_454ExtendedMIDs_Multiplexer \
+	  -primer1Mid * -ofPrimer1MidGroup 454Extended

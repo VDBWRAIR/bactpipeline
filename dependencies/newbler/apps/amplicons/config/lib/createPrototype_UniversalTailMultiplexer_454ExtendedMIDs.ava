@@ -1,0 +1,9 @@
+# Define a prototype Multiplexer for use with the any of the
+# Universal Tail-based Blueprints and the Extended set of 454 MIDs
+create multiplexer Prototype_UniversalTail_with_454ExtendedMIDs_Multiplexer \
+	-annotation "Prototype Multiplexer for use with Universal Tail-based Blueprints and using the Extended set of 454 MIDs.  This prototype assumes the most-typical case of an 'either' encoding wherein MIDs are present at both ends of a read, but only the 5' end, as sequenced, is used for demultiplexing. In order to use, optionally duplicate and rename this prototype and then fill out the MID-Sample associations."  \
+	-encoding either
+
+associate -multiplexer Prototype_UniversalTail_with_454ExtendedMIDs_Multiplexer  \
+	  -primer1Mid * -ofPrimer1MidGroup 454Extended \
+	  -primer2Mid * -ofPrimer2MidGroup 454Extended

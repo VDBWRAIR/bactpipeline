@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Name=GS De Novo Assembler
+GenericName=Assembler
+Comment=A powerful tool for de novo assembly of genomes
+Icon=fourfivefour-assembler
+Categories=454Products;Science;Other
+MimeType=application/vnd.454.cwf
+
+#The Exec is set by the installer
+Exec=/opt/454/apps/assembly/bin/gsAssembler
