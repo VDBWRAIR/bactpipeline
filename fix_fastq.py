@@ -6,13 +6,19 @@ import os.path
 import sys
 
 def main( args ):
-    if not os.path.isdir( args.outdir ):
-        os.makedirs( args.outdir )
-    for fq in args.fastq:
-        newname = os.path.join( args.outdir, os.path.basename(fq) )
+    fix_fastqs( args.outdir, args.fastq )
+
+def fix_fastqs( outdir, fastq ):
+    outfq = []
+    if not os.path.isdir( outdir ):
+        os.makedirs( outdir )
+    for fq in fastq:
+        newname = os.path.join( outdir, os.path.basename(fq) )
         with open( newname, 'w' ) as fh:
             for seq, id, qual in parse_fq(fq):
                 fh.write( mod_fq_read( seq, id, qual ) )
+        outfq.append( newname )
+    return outfq
 
 def parse_fq( fastq ):
     with open( fastq ) as fh:
