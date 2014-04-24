@@ -74,7 +74,7 @@ def replace_newbler_settings( projpath, fastqs ):
     xml = fh.read()
     fh.close()
     readxml = newbler_fastq_read_files( fastqs )
-    newxml = re.sub( '<ReadFiles>\n.*\n.*</ReadFiles>', readxml, xml, 1, re.DOTALL )
+    newxml = re.sub( '<ReadFiles>.*</ReadFiles>', readxml, xml, 1, re.DOTALL )
     with open( xmlfile, 'w' ) as fh:
         fh.write( newxml )
 
