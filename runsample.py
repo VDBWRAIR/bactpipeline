@@ -20,7 +20,10 @@ def run_sample( fqdir, outdir ):
     flash_o = os.path.join( outdir, 'flash' )
     prefix = 'out'
     flasho = flash( *fixfqs, o=prefix, d=flash_o )
-    truseq = os.path.join( os.path.dirname(__file__), 'truseq.txt' )
+
+    truseq = os.path.join( os.path.dirname(os.path.realpath(__file__)), 'truseq.txt' )
+    print truseq
+
     btrim_o = os.path.join( outdir, 'btrim' )
     bfiles = btrim_files( [f for f in flasho if f.endswith('.fastq')], btrim_o, p=truseq, b=300, P=True, Q=True, S=True, l=100 )
     projdir = os.path.join( outdir, 'newbler_assembly' )
