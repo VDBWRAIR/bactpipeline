@@ -190,11 +190,21 @@ class TestUnitNewblerFastqReadFiles(Base):
 
 class TestFunctional(Base):
     def _C( self, *args, **kwargs ):
-        script = join( dirname(dirname(__file__)), 'runsample.py' )
+        script = kwargs.get('script',join( dirname(dirname(__file__)), 'bin', 'runsample.py' ))
         cmd = [script]
         cmd += ['-o', kwargs.get('o','output')]
         cmd += list(args)
         return subprocess.call( cmd )
+
+    @attr('current')
+    def test_script_path( self ):
+        r = self._C( self.fixdir, script=join(dirname(dirname(__file__)), 'runsample.py') )
+        eq_( 0, r, 'Did not execute command correctly with actual script path' )
+
+    @attr('current')
+    def test_script_symlinkpath( self ):
+        r = self._C( self.fixdir, script=join(dirname(dirname(__file__)), 'bin', 'runsample.py') )
+        eq_( 0, r, 'Did not execute command correctly with symlink script path' )
 
     def test_fixed_fastqfiles( self ):
         r = self._C( self.fixdir )
