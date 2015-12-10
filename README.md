@@ -32,6 +32,7 @@ Running a single sample is fairly straight forward assuming you have your miseq 
 #### Usage Example
 
 For this example, assume you have a directory /home/username/reads/sample1 that contains MiSeq reads for sample1:
+
 * sample1_S1_L001_R1_001.fastq
 * sample1_S1_L001_R2_001.fastq
 
@@ -54,11 +55,11 @@ This script takes care of putting all the pieces of the pipeline together
 ### Usage
 
 * Output Directory
-** -o or --output
-** Specifies where to put all the resulting output directories for the various stages
-** Default: output
+   * -o or --output
+   * Specifies where to put all the resulting output directories for the various stages
+   * Default: output
 * readdir
-** Specifies a directory that contains the paired MiSeq reads
+   * Specifies a directory that contains the paired MiSeq reads
 
 ```
 runsample.py [-o|--output output] readdir
@@ -67,20 +68,20 @@ runsample.py [-o|--output output] readdir
 ### Output Files
 
 * fix_fastq
-** fastq files with same name as were in the readdir argument but with sequence id modified for Newbler
+   * fastq files with same name as were in the readdir argument but with sequence id modified for Newbler
 * flash/
-** out.extendedFrags.fastq
-*** paired reads combined together
-** out.notCombined_1.fastq
-*** R1 reads that did not combine
-** out.notCombined_2.fastq
-*** R2 reads that did not combine
-** out.hist
-*** Combined read lengths
-** out.histogram
-*** Combined read lengths visual
+   * out.extendedFrags.fastq
+     * paired reads combined together
+   * out.notCombined_1.fastq
+     * R1 reads that did not combine
+   * out.notCombined_2.fastq
+     * R2 reads that did not combine
+   * out.hist
+     * Combined read lengths
+   * out.histogram
+     * Combined read lengths visual
 * btrim
-** fastq files with same name as out.*.fastq from flash, but with .btrim.fastq at end
+    * fastq files with same name as out.*.fastq from flash, but with .btrim.fastq at end
 * newbler_assembly
 
 ## fix_fastq.py
