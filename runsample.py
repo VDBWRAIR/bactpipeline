@@ -51,7 +51,7 @@ def run_sample( fqdir, outdir,  sample_id=None, primer_file=None ):
     bfiles = btrim_files( [f for f in flasho if f.endswith('.fastq')], btrim_o, p=truseq, b=300, P=True, Q=True, S=True, l=100 )
     projdir = os.path.join( outdir, 'newbler_assembly' )
     total_reads = read_count(bfiles)
-    run_assembly( bfiles, o=projdir )
+    run_assembly( bfiles, o=projdir, primer_file=primer_file )
     sample_id = os.path.basename(os.path.normpath(fqdir)) if (not sample_id) else sample_id
     newbler_dir = os.path.join(projdir, 'assembly')
     summary_data = make_summary(newbler_dir, total_reads, sample_id)
@@ -112,6 +112,8 @@ def run_assembly( fastqs, **options ):
     replace_newbler_settings( projdir, fastqs )
     # In case o was not in options we set it again
     cmd = ['runProject', projdir]
+    if options.get('primer_file'):
+        cmd += ['-vt', options.get('primer_file')]
     out = subprocess.check_output( cmd, stderr=subprocess.STDOUT )
     if 'Usage:' in out:
         print ' '.join(cmd)
