@@ -21,6 +21,7 @@ If you have not already, make sure to check out the [[install]] page first.
 
 The setup script should handle all misc tasks that need to be done for installation. You just need to run
 ```
+chmod u+x ~/mrsnbactpipeline/setup
 ~/mrsnbactpipeline/setup
 ```
 before you run the pipeline
