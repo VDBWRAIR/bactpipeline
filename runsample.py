@@ -4,24 +4,39 @@ import argparse
 import os
 import sys
 import os.path
-from glob import glob
+from glob import glob, glob1
 import subprocess
 import re
+import itertools
 
 import fix_fastq
-from glob import glob1
 from Bio import SeqIO
 import csv
-from itertools import ifilter
+from itertools import ifilter, imap
 from functools import partial
+from operator import itemgetter as get
 
 compose2 = lambda f, g: lambda x: f(g(x))
 compose  = lambda *f: reduce(compose2, f)
 
-def main( args ):
-    run_sample( args.readdir, args.outdir )
+def run_sample_sheet(f, outdir):
+    os.mkdir(outdir)
+    def _run_sample(_dict):
+        indir, sample_id, primer_file = get('sample_directory', 'sample_id', 'primer_file')(_dict)
+        return run_sample(indir, os.path.join(outdir, sample_id), sample_id, primer_file)
+    sheet = csv.DictReader(open(f))
+    results = imap(_run_sample, sheet)
+    summary_data = itertools.chain.from_iterable(results)
+    write_summary(summary_data, os.path.join(outdir, 'summary.tsv'))
+    return 0
 
-def run_sample( fqdir, outdir ):
+
+def main( args ):
+    if args.sample_sheet:
+        run_sample_sheet(args.sample_sheet, args.outdir)
+    else: run_sample( args.readdir, args.outdir )
+
+def run_sample( fqdir, outdir,  sample_id=None, primer_file=None ):
     fixf_o = os.path.join( outdir, 'fix_fasta' )
     miseqfq = get_miseq_reads( fqdir )
     fixfqs = fix_fastq.fix_fastqs( fixf_o, miseqfq )
@@ -37,12 +52,12 @@ def run_sample( fqdir, outdir ):
     projdir = os.path.join( outdir, 'newbler_assembly' )
     total_reads = read_count(bfiles)
     run_assembly( bfiles, o=projdir )
-    sample_id = os.path.basename(os.path.normpath(fqdir))
+    sample_id = os.path.basename(os.path.normpath(fqdir)) if (not sample_id) else sample_id
     newbler_dir = os.path.join(projdir, 'assembly')
     summary_data = make_summary(newbler_dir, total_reads, sample_id)
-    print summary_data
-    write_summary(summary_data, os.path.join(outdir, 'summary.tsv'))
+    #write_summary(summary_data, os.path.join(outdir, 'summary.tsv'))
     write_top_contigs(newbler_dir, os.path.join(outdir, 'top_contigs.fasta'), sample_id)
+    return summary_data
 
 def write_summary(data, outfile, delim='\t'): # data is 2d list
     FIELDS = ['sample_id', 'length', 'contig_num', 'numreads', '%total_reads', 'N50']
@@ -226,6 +241,7 @@ def parse_args( args=sys.argv[1:] ):
 
     parser.add_argument(
         'readdir',
+        nargs='?',
         help='Location of read files. Miseq reads will only be used.'
     )
 
@@ -235,6 +251,13 @@ def parse_args( args=sys.argv[1:] ):
         '--outdir',
         default=outdir,
         help='The directory to put everything in for the sample[Default: {}]'.format(outdir)
+    )
+
+    parser.add_argument(
+        '-s',
+        '--sample-sheet',
+        default=None,
+        help='samplesheet here'
     )
 
     return parser.parse_args( args )
