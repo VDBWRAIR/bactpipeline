@@ -11,6 +11,7 @@ import re
 import fix_fastq
 import itertools
 from glob import glob1
+from Bio import SeqIO
 def main( args ):
     run_sample( args.readdir, args.outdir )
 
@@ -30,17 +31,55 @@ def run_sample( fqdir, outdir ):
     projdir = os.path.join( outdir, 'newbler_assembly' )
     total_reads = read_count(bfiles)
     run_assembly( bfiles, o=projdir )
-    #make_summary(projdir, total_reads)
-#def make_summary(newbler_dir, numreads):
-#    glob1(
+    summary_data = make_summary(projdir, total_reads)
+    header = 'sample_id,length,contig_num,numreads,%total_reads,N50'
 
+
+def make_top_contigs(newbler_dir, numreads):
+    pass
+
+def make_summary(newbler_dir, total_reads, sample_id, top=100):
+    contig_file = glob1(newbler_dir, '*AllContigs.fna')[0]
+    recs = SeqIO.parse(contig_file, format='fasta')
+    #recs = itertools.chain.from_iterable(imap(read_fasta, contig_files))
+    seqlen = lambda x: len(x.seq)
+    lengths = map(seqlen, recs)
+    n50 = N50(lengths)
+    top_contigs = sorted(recs, key=seqlen)[:top]
+    def get_stats(rec):
+       contig_num = int(rec.id.split('contig')[-1])
+       length, numreads = map(int, re.compile(r'[^\=^\s]+=([0-9]+)').findall(rec.description))
+       return sample_id, length, contig_num, numreads, numreads/float(total_reads), n50
+    values = map(get_stats, top_contigs)
+    return values
+
+
+
+
+from itertools import ifilter
+from functools import partial
+def N_stat(lengths, N):
+    '''maximum positive integer L such that the total number of nucleotides
+    of all contigs having length >= L is at least N% of the sum of contig lengths.'''
+    def is_candidate(L):
+        return (sum(ifilter(lambda x: x >= L, lengths)) / float(sum(lengths))) >= N
+    candidates = ifilter(is_candidate, xrange(0, sum(lengths)))
+    return max(candidates)
+N50 = partial(N_stat, N=0.5)
+cs = '''
+GATTACA
+TACTACTAC
+ATTGAT
+GAAGA
+'''
+lens = map(len, filter(bool, cs.split()))
+assert N50(lens) == 7
+assert N_stat(lens, 0.75) == 6
 
 def read_count(fqs):
     def line_count(file): return sum(1 for _ in open(file))
     fqs = itertools.chain(*fqs)
     return sum(map(line_count, fqs)) / 4
-
-
 
 def run_assembly( fastqs, **options ):
     projdir = new_assembly( options.get('o',None) )
