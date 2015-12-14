@@ -42,6 +42,13 @@ Simply run the following command to run the pipeline on sample1's data
 runsample.py -o sample1 /home/username/reads/sample1
 ```
 
+Multiple samples can be run with the --sample-sheet parameter.
+```
+./runsample.py --sample-sheet samplesheet.csv -o outdir
+./runsample.py -s samplesheet.csv -o outdir
+```
+See `samplesheet.csv` for the fields that are required in the samplesheet.
+
 ## runsample.py
 
 This script takes care of putting all the pieces of the pipeline together
