@@ -15,11 +15,23 @@ import csv
 from itertools import ifilter, imap
 from functools import partial
 from operator import itemgetter as get
+from contracts import contract, new_contract
 
 compose2 = lambda f, g: lambda x: f(g(x))
 compose  = lambda *f: reduce(compose2, f)
+complement = lambda f: lambda x: not f(x)
+new_contract('readable', os.path.isfile)
+new_contract('exists', os.path.exists)
+new_contract('directory', os.path.isdir)
 
+@contract
 def run_sample_sheet(f, outdir):
+    ''' run the pipeline on each sample within a csv/tsv file.
+    sample sheet must have fields sample_directory,sample_id,primer_file
+    :type f:      str,readable
+    :type outdir: str,!exists
+    :rtype:       int
+    '''
     os.mkdir(outdir)
     def _run_sample(_dict):
         indir, sample_id, primer_file = get('sample_directory', 'sample_id', 'primer_file')(_dict)
@@ -54,20 +66,32 @@ def run_sample( fqdir, outdir,  sample_id=None, primer_file=None ):
     run_assembly( bfiles, o=projdir, primer_file=primer_file )
     sample_id = os.path.basename(os.path.normpath(fqdir)) if (not sample_id) else sample_id
     newbler_dir = os.path.join(projdir, 'assembly')
-    summary_data = make_summary(newbler_dir, total_reads, sample_id)
+    contig_file = os.path.join(newbler_dir, glob1(newbler_dir, '*AllContigs.fna')[0])
+    summary_data = make_summary(contig_file, total_reads, sample_id)
     #write_summary(summary_data, os.path.join(outdir, 'summary.tsv'))
-    write_top_contigs(newbler_dir, os.path.join(outdir, 'top_contigs.fasta'), sample_id)
+    write_top_contigs(contig_file, os.path.join(outdir, 'top_contigs.fasta'), sample_id)
     return summary_data
 
+@contract
 def write_summary(data, outfile, delim='\t'): # data is 2d list
+    ''' write data as a csv/tsv file to outfile.
+    :type data:    Iterable
+    :type outfile: str,!exists
+    :type delim:   str '''
     FIELDS = ['sample_id', 'length', 'contig_num', 'numreads', '%total_reads', 'N50']
     header = delim.join(FIELDS)
     with open(outfile, 'w') as out:
         out.write(header + '\n')
         csv.writer(out, delimiter=delim).writerows(data)
 
-def write_top_contigs(newbler_dir, outfile, sample_id, top=100):
-    contig_file = os.path.join(newbler_dir, glob1(newbler_dir, '*AllContigs.fna')[0])
+@contract
+def write_top_contigs(contig_file, outfile, sample_id, top=100):
+    '''write the top `top` contigs (by length) to outfile.
+    :type contig_file: str,readable
+    :type outfile:     str,!exists
+    :type sample_id:   str
+    :type top:         int,>0
+    '''
     top_contigs = sorted(read_fasta(contig_file), key=seqlen)[:top]
     for c in top_contigs:
         c.id = sample_id + '_' + c.id
@@ -76,8 +100,16 @@ def write_top_contigs(newbler_dir, outfile, sample_id, top=100):
 read_fasta = partial(SeqIO.parse, format='fasta')
 
 seqlen = lambda x: len(x.seq)
-def make_summary(newbler_dir, total_reads, sample_id, top=100):
-    contig_file = os.path.join(newbler_dir, glob1(newbler_dir, '*AllContigs.fna')[0])
+@contract
+def make_summary(contig_file, total_reads, sample_id, top=100):
+    ''' Get the sample id, length, id #, number of contributing reads, percent contributing over total, of each contig
+    within the "AllContigs.fna" file within newbler_dir.
+    :type contig_file: str,readable
+    :type total_reads: int,>0
+    :type sample_id:   str
+    :type top:         int,>0
+    :rtype             list(tuple)
+    '''
     recs = list(read_fasta(contig_file))
     #recs = itertools.chain.from_iterable(imap(read_fasta, contig_files))
     lengths = map(seqlen, recs)
@@ -90,8 +122,12 @@ def make_summary(newbler_dir, total_reads, sample_id, top=100):
     return values
 
 def N_stat(lengths, N):
-    '''maximum positive integer L such that the total number of nucleotides
-    of all contigs having length >= L is at least N% of the sum of contig lengths.'''
+    '''
+    maximum positive integer L such that the total number of nucleotides
+    of all contigs having length >= L is at least N% of the sum of contig lengths.
+    :type lengths: list[N],N>0
+    :type N: float,>0
+    :rtype int'''
     def is_candidate(L):
         return (sum(ifilter(lambda x: x >= L, lengths)) / float(sum(lengths))) >= N
     candidates = ifilter(is_candidate, xrange(0, sum(lengths)))
