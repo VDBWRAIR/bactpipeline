@@ -128,7 +128,7 @@ class TestUnitRunAssembly(Base):
     def _C( self, *args, **kwargs ):
         from runsample import run_assembly
         return run_assembly( *args, **kwargs )
-    
+
     @attr('current')
     def test_creates_and_runs_project( self ):
         r = self._C( self.fqs )
@@ -238,3 +238,19 @@ class TestFunctional(Base):
         btrimo = join( 'output', 'btrim' )
         btrimfqs = glob( join(btrimo,'*.fastq') )
         self.fqs_in_xml( btrimfqs, xml )
+
+class StatsTests(unittest.TestCase):
+    def setUp(self):
+        cs = '''
+        GATTACA
+        TACTACTAC
+        ATTGAT
+        GAAGA
+        '''
+        self.lengths = map(len, filter(bool, cs.split()))
+
+    def test_n50(self):
+         self.assertEquals(7, N50(self.lengths))
+
+    def test_n75(self):
+        self.assertEquals(6,  N_stat(self.lengths, 0.75))
