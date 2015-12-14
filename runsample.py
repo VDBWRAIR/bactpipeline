@@ -9,7 +9,8 @@ import subprocess
 import re
 
 import fix_fastq
-
+import itertools
+from glob import glob1
 def main( args ):
     run_sample( args.readdir, args.outdir )
 
@@ -27,7 +28,19 @@ def run_sample( fqdir, outdir ):
     btrim_o = os.path.join( outdir, 'btrim' )
     bfiles = btrim_files( [f for f in flasho if f.endswith('.fastq')], btrim_o, p=truseq, b=300, P=True, Q=True, S=True, l=100 )
     projdir = os.path.join( outdir, 'newbler_assembly' )
+    total_reads = read_count(bfiles)
     run_assembly( bfiles, o=projdir )
+    #make_summary(projdir, total_reads)
+#def make_summary(newbler_dir, numreads):
+#    glob1(
+
+
+def read_count(fqs):
+    def line_count(file): return sum(1 for _ in open(file))
+    fqs = itertools.chain(*fqs)
+    return sum(map(line_count, fqs)) / 4
+
+
 
 def run_assembly( fastqs, **options ):
     projdir = new_assembly( options.get('o',None) )
@@ -39,7 +52,7 @@ def run_assembly( fastqs, **options ):
         print ' '.join(cmd)
         print out
         return 1
-    else:   
+    else:
         return 0
 
 def new_assembly( projdir=None ):
@@ -47,7 +60,7 @@ def new_assembly( projdir=None ):
     # If project was specified then
     if projdir is not None:
         cmd += [projdir]
-    
+
     out = subprocess.check_output( cmd )
     p = 'Created assembly project directory (.*)'
     return re.match( p, out ).group(1)
