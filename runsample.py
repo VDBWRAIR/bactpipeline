@@ -9,9 +9,15 @@ import subprocess
 import re
 
 import fix_fastq
-import itertools
 from glob import glob1
 from Bio import SeqIO
+import csv
+from itertools import ifilter
+from functools import partial
+
+compose2 = lambda f, g: lambda x: f(g(x))
+compose  = lambda *f: reduce(compose2, f)
+
 def main( args ):
     run_sample( args.readdir, args.outdir )
 
@@ -31,33 +37,43 @@ def run_sample( fqdir, outdir ):
     projdir = os.path.join( outdir, 'newbler_assembly' )
     total_reads = read_count(bfiles)
     run_assembly( bfiles, o=projdir )
-    summary_data = make_summary(projdir, total_reads)
-    header = 'sample_id,length,contig_num,numreads,%total_reads,N50'
+    sample_id = os.path.basename(os.path.normpath(fqdir))
+    newbler_dir = os.path.join(projdir, 'assembly')
+    summary_data = make_summary(newbler_dir, total_reads, sample_id)
+    print summary_data
+    write_summary(summary_data, os.path.join(outdir, 'summary.tsv'))
+    write_top_contigs(newbler_dir, os.path.join(outdir, 'top_contigs.fasta'), sample_id)
 
+def write_summary(data, outfile, delim='\t'): # data is 2d list
+    FIELDS = ['sample_id', 'length', 'contig_num', 'numreads', '%total_reads', 'N50']
+    header = delim.join(FIELDS)
+    with open(outfile, 'w') as out:
+        out.write(header + '\n')
+        csv.writer(out, delimiter=delim).writerows(data)
 
-def make_top_contigs(newbler_dir, numreads):
-    pass
+def write_top_contigs(newbler_dir, outfile, sample_id, top=100):
+    contig_file = os.path.join(newbler_dir, glob1(newbler_dir, '*AllContigs.fna')[0])
+    top_contigs = sorted(read_fasta(contig_file), key=seqlen)[:top]
+    for c in top_contigs:
+        c.id = sample_id + '_' + c.id
+    SeqIO.write(top_contigs, outfile, 'fasta')
 
+read_fasta = partial(SeqIO.parse, format='fasta')
+
+seqlen = lambda x: len(x.seq)
 def make_summary(newbler_dir, total_reads, sample_id, top=100):
-    contig_file = glob1(newbler_dir, '*AllContigs.fna')[0]
-    recs = SeqIO.parse(contig_file, format='fasta')
+    contig_file = os.path.join(newbler_dir, glob1(newbler_dir, '*AllContigs.fna')[0])
+    recs = list(read_fasta(contig_file))
     #recs = itertools.chain.from_iterable(imap(read_fasta, contig_files))
-    seqlen = lambda x: len(x.seq)
     lengths = map(seqlen, recs)
     n50 = N50(lengths)
-    top_contigs = sorted(recs, key=seqlen)[:top]
     def get_stats(rec):
        contig_num = int(rec.id.split('contig')[-1])
        length, numreads = map(int, re.compile(r'[^\=^\s]+=([0-9]+)').findall(rec.description))
        return sample_id, length, contig_num, numreads, numreads/float(total_reads), n50
-    values = map(get_stats, top_contigs)
+    values = map(get_stats, recs)
     return values
 
-
-
-
-from itertools import ifilter
-from functools import partial
 def N_stat(lengths, N):
     '''maximum positive integer L such that the total number of nucleotides
     of all contigs having length >= L is at least N% of the sum of contig lengths.'''
@@ -65,22 +81,17 @@ def N_stat(lengths, N):
         return (sum(ifilter(lambda x: x >= L, lengths)) / float(sum(lengths))) >= N
     candidates = ifilter(is_candidate, xrange(0, sum(lengths)))
     return max(candidates)
+
 N50 = partial(N_stat, N=0.5)
-cs = '''
-GATTACA
-TACTACTAC
-ATTGAT
-GAAGA
-'''
-lens = map(len, filter(bool, cs.split()))
-assert N50(lens) == 7
-assert N_stat(lens, 0.75) == 6
+def icount(seq): return sum(1 for _ in seq)  #
+#read_count = compose(icount, partial(map, read_fasta), itertools.chain.from_iterable)
+read_count = compose(sum, partial(map, compose(icount, read_fasta, open)))#, itertools.chain.from_iterable)
 
-def read_count(fqs):
-    def line_count(file): return sum(1 for _ in open(file))
-    fqs = itertools.chain(*fqs)
-    return sum(map(line_count, fqs)) / 4
-
+#def read_count(fqs):
+#    def line_count(file): return sum(1 for _ in open(file))
+#    fqs = itertools.chain(*fqs)
+#    return sum(map(line_count, fqs)) / 4
+#
 def run_assembly( fastqs, **options ):
     projdir = new_assembly( options.get('o',None) )
     replace_newbler_settings( projdir, fastqs )
