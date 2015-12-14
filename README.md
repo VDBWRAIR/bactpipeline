@@ -24,7 +24,15 @@ The setup script should handle all misc tasks that need to be done for installat
 chmod u+x ~/mrsnbactpipeline/setup
 ~/mrsnbactpipeline/setup
 ```
-before you run the pipeline
+before you run the pipeline. It is also necessary to install the python dependies, like so:
+
+```
+virtualenv ~/mrsnbactpipeline
+. ~/mrsnbactpipeline/bin/activate
+pip install -r ~/mrsnbactpipeline/requirements.txt
+```
+
+you will have to re-source the virtualenv when you want to use the pipeline, using `. ~/mrsnbactpipeline/bin/activate`
 
 ### Running a single sample
 
