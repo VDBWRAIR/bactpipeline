@@ -17,6 +17,12 @@ from functools import partial
 from operator import itemgetter as get
 from contracts import contract, new_contract
 
+if not hasattr(subprocess, 'check_output'):
+    def check_output(*args, **kwargs):
+        kwargs['stdout'] = subprocess.PIPE
+        return subprocess.Popen(*args, **kwargs).communicate()[0]
+    subprocess.check_output = check_output
+
 compose2 = lambda f, g: lambda x: f(g(x))
 compose  = lambda *f: reduce(compose2, f)
 complement = lambda f: lambda x: not f(x)
@@ -195,7 +201,8 @@ def replace_newbler_settings( projpath, fastqs ):
     xml = fh.read()
     fh.close()
     readxml = newbler_fastq_read_files( fastqs )
-    newxml = re.sub( '<ReadFiles>.*</ReadFiles>', readxml, xml, 1, re.DOTALL )
+    rec = re.compile('<ReadFiles>.*</ReadFiles>', re.DOTALL)
+    newxml = re.sub( rec, readxml, xml, 1 )
     with open( xmlfile, 'w' ) as fh:
         fh.write( newxml )
 
@@ -227,7 +234,7 @@ def btrim_files( fqlist, outdir, **btrimops ):
     return ofiles
 
 def btrim( **options ):
-    cmd = ['btrim'] + build_options( **options )
+    cmd = ['btrim64-static'] + build_options( **options )
     print ' '.join(cmd)
     try:
         out = subprocess.check_output( cmd, stderr=subprocess.STDOUT )
