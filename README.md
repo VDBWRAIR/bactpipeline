@@ -4,43 +4,42 @@ Bacteria Pipeline modified from MRSN Bacteria Pipeline
 ## Install
 
 ### Requirements
-Everything should be bundled with the pipeline, so no external installation should be necessary
+
+* Roche 454 Analysis Software(gsAssembler, runProject)
+* Everything should be bundled with the pipeline
 
 ### Installation
 
-Clone repo
+1. Clone repo
+
 ```
-cd ~/ && git clone /media/VD_Research/Dev/GitRepos/mrsnbactpipeline.git
+cd ~/ && git clone https://github.com/VDBWRAIR/bactpipeline.git
+```
+
+2. Install python virtualenv
+
+```
+virtualenv ~/bactpipeline
+. ~/bactpipeline/bin/activate
+pip install -r ~/bactpipeline/requirements.txt
 ```
 
 ## Running the Pipeline
 
 If you have not already, make sure to check out the [[install]] page first.
 
-### Setup
-
-The setup script should handle all misc tasks that need to be done for installation. You just need to run
-```
-chmod u+x ~/mrsnbactpipeline/setup
-~/mrsnbactpipeline/setup
-```
-before you run the pipeline. It is also necessary to install the python dependies, like so:
-
-```
-virtualenv ~/mrsnbactpipeline
-. ~/mrsnbactpipeline/bin/activate
-pip install -r ~/mrsnbactpipeline/requirements.txt
-```
-
-you will have to re-source the virtualenv when you want to use the pipeline, using `. ~/mrsnbactpipeline/bin/activate`
+You will have to re-source the virtualenv when you want to use the pipeline, 
+using `. ~/bactpipeline/bin/activate`
 
 ### Running a single sample
 
-Running a single sample is fairly straight forward assuming you have your miseq reads parsed out into individual folders for each sample.
+Running a single sample is fairly straight forward assuming you have your miseq 
+reads parsed out into individual folders for each sample.
 
 #### Usage Example
 
-For this example, assume you have a directory /home/username/reads/sample1 that contains MiSeq reads for sample1:
+For this example, assume you have a directory /home/username/reads/sample1 that 
+contains MiSeq reads for sample1:
 
 * sample1_S1_L001_R1_001.fastq
 * sample1_S1_L001_R2_001.fastq
