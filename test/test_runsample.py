@@ -95,13 +95,14 @@ class TestUnitBtrim(Base):
         inf = self.flash()[0]
         outf = join('btrim','outfile.fastq')
         r = self._C( p=self.truseq, t=inf, o=outf )
-        ok_( 0 != r )
+        ok_( 0 != r, 'btrim return code was {0} instead of non-zero'.format(r) )
 
     def test_returns_retcode( self ):
         from bactpipeline.runsample import flash
         flashout = flash( *self.fqs )
         eq_( 0, self._C( p=self.truseq, t=flashout[0], o='somefile' ), 'Did not return return code' )
-        ok_( 0 != self._C() )
+        r = self._C()
+        ok_( 0 != r, 'btrim return code was {0} instead of non-zero'.format(r) )
 
 class TestUnitBtrimFiles( Base ):
     def _C( self, *args, **kwargs ):
