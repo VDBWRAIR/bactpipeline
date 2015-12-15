@@ -9,7 +9,7 @@ import subprocess
 import re
 import itertools
 
-import fix_fastq
+from bactpipeline import fix_fastq
 from Bio import SeqIO
 import csv
 from itertools import ifilter, imap
@@ -43,7 +43,8 @@ def run_sample_sheet(f, outdir):
     return 0
 
 
-def main( args ):
+def main():
+    args = parse_args()
     if args.sample_sheet:
         run_sample_sheet(args.sample_sheet, args.outdir)
     else: run_sample( args.readdir, args.outdir )
@@ -171,7 +172,7 @@ def new_assembly( projdir=None ):
 def newbler_fastq_read_files( fastqs ):
     filet = '''
     <File>
-      <Path>{}</Path>
+      <Path>{0}</Path>
       <Type>Fastq</Type>
       <FastqScoreType>Standard</FastqScoreType>
       <FastqAccnoType>General</FastqAccnoType>
@@ -181,7 +182,7 @@ def newbler_fastq_read_files( fastqs ):
     </File>'''
 
     xml = '<ReadFiles>\n'
-    xml += '\t<SetReadCount>{}</SetReadCount>'.format(len(fastqs))
+    xml += '\t<SetReadCount>{0}</SetReadCount>'.format(len(fastqs))
     for f in fastqs:
         xml += filet.format(f)
     xml += '\n\t</ReadFiles>'
@@ -230,7 +231,7 @@ def btrim( **options ):
     try:
         out = subprocess.check_output( cmd, stderr=subprocess.STDOUT )
     except subprocess.CalledProcessError as e:
-        print "Command run: {}".format(' '.join(cmd) )
+        print "Command run: {0}".format(' '.join(cmd) )
         print "btrim returned with return code ".format( str(e.returncode) )
         print "and error: " + e.output
         return e.returncode
@@ -253,8 +254,8 @@ def flash( mate1, mate2, **options ):
     try:
         out = subprocess.check_output( cmd, stderr=subprocess.STDOUT )
     except subprocess.CalledProcessError as e:
-        print "Command run: {}".format(' '.join(cmd) )
-        print "flash returned with return code {}".format( str(e.returncode) )
+        print "Command run: {0}".format(' '.join(cmd) )
+        print "flash returned with return code {0}".format( str(e.returncode) )
         print "and error: " + e.output
         return []
     prefix = options.get('o','out')
@@ -283,12 +284,11 @@ def parse_args( args=sys.argv[1:] ):
         help='Location of read files. Miseq reads will only be used.'
     )
 
-    outdir = 'output'
     parser.add_argument(
         '-o',
         '--outdir',
-        default=outdir,
-        help='The directory to put everything in for the sample[Default: {}]'.format(outdir)
+        default='output',
+        help='The directory to put everything in for the sample[Default: %(default)s]'
     )
 
     parser.add_argument(
@@ -301,4 +301,4 @@ def parse_args( args=sys.argv[1:] ):
     return parser.parse_args( args )
 
 if __name__ == '__main__':
-    main( parse_args() )
+    main()
