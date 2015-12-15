@@ -1,7 +1,8 @@
 *.pyc
 *.log
 *.o
-flash
+dependencies/*/flash
+test/testruns
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

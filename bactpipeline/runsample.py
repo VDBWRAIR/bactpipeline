@@ -20,7 +20,12 @@ from contracts import contract, new_contract
 if not hasattr(subprocess, 'check_output'):
     def check_output(*args, **kwargs):
         kwargs['stdout'] = subprocess.PIPE
-        return subprocess.Popen(*args, **kwargs).communicate()[0]
+        p = subprocess.Popen(*args, **kwargs)
+        sout, serr = p.communicate()
+        if p.returncode != 0:
+            e = subprocess.CalledProcessError(p.returncode, args[0])
+            e.output = sout
+            raise e
     subprocess.check_output = check_output
 
 compose2 = lambda f, g: lambda x: f(g(x))
@@ -235,6 +240,13 @@ def btrim_files( fqlist, outdir, **btrimops ):
 def btrim( **options ):
     cmd = ['btrim64-static'] + build_options( **options )
     print ' '.join(cmd)
+    # Ensure outdir exists for btrim
+    #outpath = options.get('o')
+    ## only if outpath is specified and has at least one directory in it
+    #if outpath and os.sep in outpath:
+        #outdir = os.path.dirname(outpath)
+        #if not os.path.isdir(outdir):
+            #os.makedirs(outdir)
     try:
         out = subprocess.check_output( cmd, stderr=subprocess.STDOUT )
     except subprocess.CalledProcessError as e:

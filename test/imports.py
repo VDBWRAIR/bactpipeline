@@ -13,3 +13,5 @@ try:
     import unittest2 as unittest
 except ImportError:
     import unittest
+
+TEST_DIR = dirname(__file__)
