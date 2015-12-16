@@ -34,4 +34,7 @@ setup(
             'fix_fastq = bactpipeline.fix_fastq:main',
         ],
     },
+    package_data = {
+        'bactpipeline': ['truseq.txt']
+    }
 )

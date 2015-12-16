@@ -8,6 +8,7 @@ from glob import glob, glob1
 import subprocess
 import re
 import itertools
+from pkg_resources import resource_filename
 
 from bactpipeline import fix_fastq
 from Bio import SeqIO
@@ -26,6 +27,7 @@ if not hasattr(subprocess, 'check_output'):
             e = subprocess.CalledProcessError(p.returncode, args[0])
             e.output = sout
             raise e
+        return sout
     subprocess.check_output = check_output
 
 compose2 = lambda f, g: lambda x: f(g(x))
@@ -36,40 +38,37 @@ new_contract('exists', os.path.exists)
 new_contract('directory', os.path.isdir)
 
 @contract
-def run_sample_sheet(f, outdir):
+def run_sample_sheet(f, outdir, truseq):
     ''' run the pipeline on each sample within a csv/tsv file.
     sample sheet must have fields sample_directory,sample_id,primer_file
     :type f:      str,readable
     :type outdir: str,!exists
+    :type truseq: str,readable
     :rtype:       int
     '''
     os.mkdir(outdir)
     def _run_sample(_dict):
         indir, sample_id, primer_file = get('sample_directory', 'sample_id', 'primer_file')(_dict)
-        return run_sample(indir, os.path.join(outdir, sample_id), sample_id, primer_file)
+        return run_sample(indir, os.path.join(outdir, sample_id), truseq, sample_id, primer_file)
     sheet = csv.DictReader(open(f))
     results = imap(_run_sample, sheet)
     summary_data = itertools.chain.from_iterable(results)
     write_summary(summary_data, os.path.join(outdir, 'summary.tsv'))
     return 0
 
-
 def main():
     args = parse_args()
     if args.sample_sheet:
-        run_sample_sheet(args.sample_sheet, args.outdir)
-    else: run_sample( args.readdir, args.outdir )
+        run_sample_sheet(args.sample_sheet, args.outdir, args.truseq)
+    else: run_sample( args.readdir, args.outdir, args.truseq )
 
-def run_sample( fqdir, outdir,  sample_id=None, primer_file=None ):
+def run_sample( fqdir, outdir, truseq, sample_id=None, primer_file=None ):
     fixf_o = os.path.join( outdir, 'fix_fasta' )
     miseqfq = get_miseq_reads( fqdir )
     fixfqs = fix_fastq.fix_fastqs( fixf_o, miseqfq )
     flash_o = os.path.join( outdir, 'flash' )
     prefix = 'out'
     flasho = flash( *fixfqs, o=prefix, d=flash_o )
-
-    truseq = os.path.join( os.path.dirname(os.path.realpath(__file__)), 'truseq.txt' )
-    print truseq
 
     btrim_o = os.path.join( outdir, 'btrim' )
     bfiles = btrim_files( [f for f in flasho if f.endswith('.fastq')], btrim_o, p=truseq, b=300, P=True, Q=True, S=True, l=100 )
@@ -176,6 +175,7 @@ def new_assembly( projdir=None ):
     if projdir is not None:
         cmd += [projdir]
 
+    print ' '.join(cmd)
     out = subprocess.check_output( cmd )
     p = 'Created assembly project directory (.*)'
     return re.match( p, out ).group(1)
@@ -315,6 +315,13 @@ def parse_args( args=sys.argv[1:] ):
         '--sample-sheet',
         default=None,
         help='samplesheet here'
+    )
+
+    parser.add_argument(
+        '-t',
+        '--truseq',
+        default=resource_filename(__name__, 'truseq.txt'),
+        help='Path to truseq.txt[Default: %(default)s]'
     )
 
     return parser.parse_args( args )
