@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+# Mock newAssembly
+from __future__ import print_function
+
+import shutil
+import sys
+import os
+from os.path import *
+import string
+
+TEST_DIR = dirname(__file__)
+
+# requested projectname
+proj_name = 'P_2015_12_16_14_38_34_runAssembly'
+
+# Empty project
+project_stub = join(TEST_DIR, proj_name)
+
+if len(sys.argv) > 1:
+    proj_name = sys.argv[1]
+
+# copy stub project
+shutil.copytree(project_stub, proj_name)
+
+# Replace PROJECTPATH with path to this new project
+xmlp = join(proj_name, 'assembly', '454AssemblyProject.xml')
+with open(xmlp, 'r+') as fh:
+    xml = fh.read()
+    if isinstance(xml, bytes):
+        xml = xml.decode('utf-8')
+    xml = string.Template(xml).substitute(PROJECTPATH=proj_name)
+    fh.seek(0)
+    fh.truncate()
+    fh.write(xml)
+print('Created assembly project directory {0}'.format(proj_name))

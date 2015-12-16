@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<FourFiveFourProject>
+
+  <ProjectInformation>
+    <ProjectType>Assembly</ProjectType>
+    <ProjectDirectory>${PROJECTPATH}</ProjectDirectory>
+    <dateCreated>Wed Dec 16 14:38:34 2015</dateCreated>
+    <dateModified>Wed Dec 16 14:38:34 2015</dateModified>
+    <SoftwareVersion>2.9 (20130529_1641)</SoftwareVersion>
+  </ProjectInformation>
+
+  <Config>
+    <minimumReadLength>20</minimumReadLength>
+    <overlapSeedStep>12</overlapSeedStep>
+    <overlapSeedLength>16</overlapSeedLength>
+    <overlapMinSeedCount>1</overlapMinSeedCount>
+    <overlapSeedHitLimit>70</overlapSeedHitLimit>
+    <overlapHitPositionLimit>1000000</overlapHitPositionLimit>
+    <overlapMinMatchLength>40</overlapMinMatchLength>
+    <overlapMinMatchIdentity>90</overlapMinMatchIdentity>
+    <overlapMatchIdentScore>2</overlapMatchIdentScore>
+    <overlapMatchDiffScore>-3</overlapMatchDiffScore>
+    <overlapMatchUniqueThresh>12</overlapMatchUniqueThresh>
+    <isogroupThresh>500</isogroupThresh>
+    <isotigThresh>100</isotigThresh>
+    <isotigContigCountThresh>100</isotigContigCountThresh>
+    <isotigContigLengthThresh>3</isotigContigLengthThresh>
+    <isotigDepthSplit>false</isotigDepthSplit>
+    <aceMode>Auto</aceMode>
+    <aceReadMode>Default</aceReadMode>
+    <pairAlignMode>None</pairAlignMode>
+    <alignInfoMode>Auto</alignInfoMode>
+    <nucleotideFreqTable>false</nucleotideFreqTable>
+    <mapMinContigDepth>1</mapMinContigDepth>
+    <allContigThresh>100</allContigThresh>
+    <largeContigThresh>500</largeContigThresh>
+    <expectedDepth>0</expectedDepth>
+    <cDNAMode>false</cDNAMode>
+    <referenceMode>Auto</referenceMode>
+    <largeGenome>false</largeGenome>
+    <multiplexMode>false</multiplexMode>
+    <ripMode>false</ripMode>
+    <heterozygoteMode>false</heterozygoteMode>
+    <scaffoldLengthThreshold>2000</scaffoldLengthThreshold>
+    <assemblerBatchSize>0</assemblerBatchSize>
+    <numCPU>1</numCPU>
+    <showSingleReadVariations>false</showSingleReadVariations>
+    <nimblegenMappingMode>false</nimblegenMappingMode>
+    <backwardCompatibleContigging>false</backwardCompatibleContigging>
+    <finishMode>false</finishMode>
+    <autoTrimming>true</autoTrimming>
+    <VectorDatabase/>
+    <screeningDatabase/>
+    <haplotypeFile/>
+    <targetedRegionFile/>
+    <annotationFile/>
+    <knownSNPFile/>
+    <accessionRenameFile/>
+    <filterExcludeFile/>
+    <filterIncludeFile/>
+    <UseSerialIO>false</UseSerialIO>
+    <SerialIOMinimizeDisk>false</SerialIOMinimizeDisk>
+    <SerialIOMemLimit>0</SerialIOMemLimit>
+  </Config>
+
+  <ReferenceFiles>
+    <SetRefCount>0</SetRefCount>
+  </ReferenceFiles>
+
+  <ReadFiles>
+    <SetReadCount>0</SetReadCount>
+  </ReadFiles>
+
+</FourFiveFourProject>

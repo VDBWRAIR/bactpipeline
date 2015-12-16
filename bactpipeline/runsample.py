@@ -19,6 +19,9 @@ from contracts import contract, new_contract
 from functools import reduce
 if sys.version_info[0] == 2:
     from itertools import ifilter as filter, imap as map
+else:
+    # Python3 normalization
+    xrange = range
 
 compose2 = lambda f, g: lambda x: f(g(x))
 compose  = lambda *f: reduce(compose2, f)
@@ -129,7 +132,7 @@ def make_summary(contig_file, total_reads, sample_id, top=100):
     '''
     recs = list(read_fasta(contig_file))
     #recs = itertools.chain.from_iterable(imap(read_fasta, contig_files))
-    lengths = map(seqlen, recs)
+    lengths = list(map(seqlen, recs))
     n50 = N50(lengths)
     def get_stats(rec):
        contig_num = int(rec.id.split('contig')[-1])
@@ -138,6 +141,7 @@ def make_summary(contig_file, total_reads, sample_id, top=100):
     values = map(get_stats, recs)
     return values
 
+@contract
 def N_stat(lengths, N):
     '''
     maximum positive integer L such that the total number of nucleotides
@@ -243,7 +247,7 @@ def btrim_files( fqlist, outdir, **btrimops ):
     return ofiles
 
 def btrim( **options ):
-    cmd = ['btrim64-static'] + build_options( **options )
+    cmd = ['btrim'] + build_options( **options )
     # Ensure outdir exists for btrim
     #outpath = options.get('o')
     ## only if outpath is specified and has at least one directory in it
