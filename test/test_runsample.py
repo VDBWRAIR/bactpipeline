@@ -1,3 +1,4 @@
+from __future__ import print_function
 from imports import *
 import common
 
@@ -176,7 +177,7 @@ class TestUnitReplaceNewblerSettings(Base):
         xmlfile = join( projdir, 'assembly', '454AssemblyProject.xml' )
         r = self._C( projdir, self.fqs )
         xml = open(xmlfile).read()
-        print xml
+        print(xml)
         eq_( 2, xml.count('ReadFiles'), 'Did not insert ReadFiles correctly' )
         self.fqs_in_xml( self.fqs, xml )
 
@@ -195,14 +196,14 @@ class TestFunctional(Base):
         cmd = [script]
         cmd += ['-o', kwargs.get('o','output')]
         cmd += list(args)
-        print ' '.join(cmd)
+        print(' '.join(cmd))
         r = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         r.wait()
         return r
 
     def test_fixed_fastqfiles( self ):
         r = self._C( self.fixdir )
-        print r.communicate()
+        print(r.communicate())
         outdir = join( 'output', 'fix_fasta' )
         ok_( exists(outdir), 'Did not create fix_fasta output dir' )
         rfqs = os.listdir( join('output','fix_fasta') )
@@ -210,7 +211,7 @@ class TestFunctional(Base):
 
     def test_flash_files( self ):
         r = self._C( self.fixdir )
-        print r.communicate()
+        print(r.communicate())
         outdir = join( 'output', 'flash' )
         prefix = 'out'
         efiles = self.flash_output_files( prefix, outdir )
@@ -219,17 +220,17 @@ class TestFunctional(Base):
 
     def test_btrim_files( self ):
         r = self._C( self.fixdir )
-        print r.communicate()
+        print(r.communicate())
         flasho = filter( lambda x: x.endswith('.fastq'), self.flash_output_files( 'out', 'flash' ) )
         outdir = join( 'output', 'btrim' )
-        print [join(root,f) for root,dirs,files in os.walk('.') for f in files]
+        print([join(root,f) for root,dirs,files in os.walk('.') for f in files])
         for f in flasho:
             bfile = join(outdir,basename(f)).replace('.fastq','.btrim.fastq')
             ok_( exists(bfile), 'Did not create btrim output file {0}'.format(bfile) )
 
     def test_newbler_files( self ):
         r = self._C( self.fixdir, o='output' )
-        print r.communicate()
+        print(r.communicate())
         projdir = join( 'output', 'newbler_assembly' )
         xmlp = join( projdir, 'assembly', '454AssemblyProject.xml' )
         xml = open(xmlp).read()

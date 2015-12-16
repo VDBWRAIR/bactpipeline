@@ -1,9 +1,11 @@
-from setuptools import setup, find_packages
+from __future__ import print_function
 
-import bactpipeline
+from setuptools import setup, find_packages
 import subprocess
 import sys
 from os.path import join, exists
+
+import bactpipeline
 
 flash_path = 'dependencies/FLASH-1.2.10'
 flash_bin = join(flash_path, 'flash')
@@ -11,8 +13,8 @@ if not exists(flash_bin):
     try:
         subprocess.check_call('make', cwd=flash_path)
     except subprocess.CalledProcessError as e:
-        print "Failed to build flash prior to install."
-        print "Likely you require some system packages in order to compile it"
+        print("Failed to build flash prior to install.")
+        print("Likely you require some system packages in order to compile it")
         sys.exit(1)
 
 setup(

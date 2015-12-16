@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import argparse
 import os
 import os.path
@@ -76,6 +74,3 @@ def parse_args( args=sys.argv[1:] ):
     )
 
     return parser.parse_args( args )
-
-if __name__ == '__main__':
-    main()

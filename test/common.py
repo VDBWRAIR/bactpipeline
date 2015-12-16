@@ -1,3 +1,4 @@
+from __future__ import print_function
 from imports import *
 
 class Base( object ):
@@ -10,7 +11,7 @@ class Base( object ):
         except OSError as e:
             pass
         self.tdir = tempfile.mkdtemp(suffix='test', dir=self.tempdir)
-        print self.tdir
+        print(self.tdir)
         os.chdir( self.tdir )
 
     def tearDown( self ):
