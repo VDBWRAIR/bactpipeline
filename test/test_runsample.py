@@ -52,7 +52,7 @@ class TestUnitBuildOptions(Base):
 
     def test_handles_numbers( self ):
         r = self._C( i=5, f=5.5 )
-        eq_( ['-i','5','-f','5.5'], r )
+        eq_( sorted(['-i','5','-f','5.5']), sorted(r) )
 
 class TestUnitFlash(Base):
     def _C( self, *args, **kwargs ):
@@ -247,7 +247,7 @@ class StatsTests(unittest.TestCase):
         ATTGAT
         GAAGA
         '''
-        self.lengths = map(len, filter(bool, cs.split()))
+        self.lengths = list(map(len, filter(bool, cs.split())))
 
     def test_n50(self):
          self.assertEquals(7, N50(self.lengths))
