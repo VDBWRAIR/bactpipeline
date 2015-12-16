@@ -98,6 +98,7 @@ def write_top_contigs(contig_file, outfile, sample_id, top=100):
     SeqIO.write(top_contigs, outfile, 'fasta')
 
 read_fasta = partial(SeqIO.parse, format='fasta')
+read_fastq = partial(SeqIO.parse, format='fastq')
 
 seqlen = lambda x: len(x.seq)
 @contract
@@ -136,7 +137,7 @@ def N_stat(lengths, N):
 N50 = partial(N_stat, N=0.5)
 def icount(seq): return sum(1 for _ in seq)  #
 #read_count = compose(icount, partial(map, read_fasta), itertools.chain.from_iterable)
-read_count = compose(sum, partial(map, compose(icount, read_fasta, open)))#, itertools.chain.from_iterable)
+read_count = compose(sum, partial(map, compose(icount, read_fastq, open)))#, itertools.chain.from_iterable)
 
 #def read_count(fqs):
 #    def line_count(file): return sum(1 for _ in open(file))
