@@ -5,7 +5,7 @@ class Base( common.Base ):
     fixdir = join( dirname(__file__), 'fixtures', 'fix_fastq' )
     fqs = glob( join( fixdir, '*.fastq' ) )
     bnfqs = [basename(fq) for fq in fqs]
-    truseq = join(dirname(dirname(__file__)),'truseq.txt')
+    truseq = join(dirname(TEST_DIR),'bactpipeline','truseq.txt')
     assemprojxml = join(fixdir,'454AssemblyProject.xml')
     flash_files = (
         '{0}.extendedFrags.fastq',
@@ -195,10 +195,14 @@ class TestFunctional(Base):
         cmd = [script]
         cmd += ['-o', kwargs.get('o','output')]
         cmd += list(args)
-        return subprocess.call( cmd )
+        print ' '.join(cmd)
+        r = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        r.wait()
+        return r
 
     def test_fixed_fastqfiles( self ):
         r = self._C( self.fixdir )
+        print r.communicate()
         outdir = join( 'output', 'fix_fasta' )
         ok_( exists(outdir), 'Did not create fix_fasta output dir' )
         rfqs = os.listdir( join('output','fix_fasta') )
@@ -206,6 +210,7 @@ class TestFunctional(Base):
 
     def test_flash_files( self ):
         r = self._C( self.fixdir )
+        print r.communicate()
         outdir = join( 'output', 'flash' )
         prefix = 'out'
         efiles = self.flash_output_files( prefix, outdir )
@@ -214,6 +219,7 @@ class TestFunctional(Base):
 
     def test_btrim_files( self ):
         r = self._C( self.fixdir )
+        print r.communicate()
         flasho = filter( lambda x: x.endswith('.fastq'), self.flash_output_files( 'out', 'flash' ) )
         outdir = join( 'output', 'btrim' )
         print [join(root,f) for root,dirs,files in os.walk('.') for f in files]
@@ -223,6 +229,7 @@ class TestFunctional(Base):
 
     def test_newbler_files( self ):
         r = self._C( self.fixdir, o='output' )
+        print r.communicate()
         projdir = join( 'output', 'newbler_assembly' )
         xmlp = join( projdir, 'assembly', '454AssemblyProject.xml' )
         xml = open(xmlp).read()
