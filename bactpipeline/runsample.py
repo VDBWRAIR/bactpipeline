@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+from __future__ import print_function
 
 import argparse
 import os
@@ -13,22 +13,12 @@ from pkg_resources import resource_filename
 from bactpipeline import fix_fastq
 from Bio import SeqIO
 import csv
-from itertools import ifilter, imap
 from functools import partial
 from operator import itemgetter as get
 from contracts import contract, new_contract
-
-if not hasattr(subprocess, 'check_output'):
-    def check_output(*args, **kwargs):
-        kwargs['stdout'] = subprocess.PIPE
-        p = subprocess.Popen(*args, **kwargs)
-        sout, serr = p.communicate()
-        if p.returncode != 0:
-            e = subprocess.CalledProcessError(p.returncode, args[0])
-            e.output = sout
-            raise e
-        return sout
-    subprocess.check_output = check_output
+from functools import reduce
+if sys.version_info[0] == 2:
+    from itertools import ifilter as filter, imap as map
 
 compose2 = lambda f, g: lambda x: f(g(x))
 compose  = lambda *f: reduce(compose2, f)
@@ -36,6 +26,21 @@ complement = lambda f: lambda x: not f(x)
 new_contract('readable', os.path.isfile)
 new_contract('exists', os.path.exists)
 new_contract('directory', os.path.isdir)
+
+def run_command(cmd, stderr=None, print_command=True):
+    if print_command:
+        print(' '.join(cmd))
+    p = subprocess.Popen(cmd, stderr=stderr, stdout=subprocess.PIPE)
+    sout, serr = p.communicate()
+    if sout and isinstance(sout, bytes):
+        sout = sout.decode('utf-8')
+    if serr and isinstance(serr, bytes):
+        serr = serr.decode('utf-8')
+    if p.returncode != 0:
+        e = subprocess.CalledProcessError(p.returncode, cmd)
+        e.output = sout
+        raise e
+    return sout
 
 @contract
 def run_sample_sheet(f, outdir, truseq):
@@ -51,7 +56,7 @@ def run_sample_sheet(f, outdir, truseq):
         indir, sample_id, primer_file = get('sample_directory', 'sample_id', 'primer_file')(_dict)
         return run_sample(indir, os.path.join(outdir, sample_id), truseq, sample_id, primer_file)
     sheet = csv.DictReader(open(f))
-    results = imap(_run_sample, sheet)
+    results = map(_run_sample, sheet)
     summary_data = itertools.chain.from_iterable(results)
     write_summary(summary_data, os.path.join(outdir, 'summary.tsv'))
     return 0
@@ -141,8 +146,8 @@ def N_stat(lengths, N):
     :type N: float,>0
     :rtype int'''
     def is_candidate(L):
-        return (sum(ifilter(lambda x: x >= L, lengths)) / float(sum(lengths))) >= N
-    candidates = ifilter(is_candidate, xrange(0, sum(lengths)))
+        return (sum(filter(lambda x: x >= L, lengths)) / float(sum(lengths))) >= N
+    candidates = filter(is_candidate, xrange(0, sum(lengths)))
     return max(candidates)
 
 N50 = partial(N_stat, N=0.5)
@@ -162,10 +167,9 @@ def run_assembly( fastqs, **options ):
     cmd = ['runProject', projdir]
     if options.get('primer_file'):
         cmd += ['-vt', options.get('primer_file')]
-    out = subprocess.check_output( cmd, stderr=subprocess.STDOUT )
+    out = run_command(cmd, subprocess.STDOUT)
     if 'Usage:' in out:
-        print ' '.join(cmd)
-        print out
+        print(out)
         return 1
     else:
         return 0
@@ -176,10 +180,10 @@ def new_assembly( projdir=None ):
     if projdir is not None:
         cmd += [projdir]
 
-    print ' '.join(cmd)
-    out = subprocess.check_output( cmd )
+    out = run_command(cmd)
     p = 'Created assembly project directory (.*)'
-    return re.match( p, out ).group(1)
+    projpath = re.match( p, out ).group(1)
+    return projpath
 
 def newbler_fastq_read_files( fastqs ):
     filet = '''
@@ -240,7 +244,6 @@ def btrim_files( fqlist, outdir, **btrimops ):
 
 def btrim( **options ):
     cmd = ['btrim64-static'] + build_options( **options )
-    print ' '.join(cmd)
     # Ensure outdir exists for btrim
     #outpath = options.get('o')
     ## only if outpath is specified and has at least one directory in it
@@ -249,11 +252,11 @@ def btrim( **options ):
         #if not os.path.isdir(outdir):
             #os.makedirs(outdir)
     try:
-        out = subprocess.check_output( cmd, stderr=subprocess.STDOUT )
+        out = run_command(cmd, subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        print "Command run: {0}".format(' '.join(cmd) )
-        print "btrim returned with return code ".format( str(e.returncode) )
-        print "and error: " + e.output
+        print("Command run: {0}".format(' '.join(cmd) ))
+        print("btrim returned with return code ".format( str(e.returncode) ))
+        print("and error: " + e.output)
         return e.returncode
     return 0
 
@@ -272,11 +275,10 @@ def flash( mate1, mate2, **options ):
     '''
     cmd = ['flash'] + build_options(**options) + [mate1,mate2]
     try:
-        out = subprocess.check_output( cmd, stderr=subprocess.STDOUT )
+        out = run_command(cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        print "Command run: {0}".format(' '.join(cmd) )
-        print "flash returned with return code {0}".format( str(e.returncode) )
-        print "and error: " + e.output
+        print("flash returned with return code {0}".format( str(e.returncode) ))
+        print("and error: " + e.output)
         return []
     prefix = options.get('o','out')
     outdir = options.get('d','')
@@ -326,6 +328,3 @@ def parse_args( args=sys.argv[1:] ):
     )
 
     return parser.parse_args( args )
-
-if __name__ == '__main__':
-    main()

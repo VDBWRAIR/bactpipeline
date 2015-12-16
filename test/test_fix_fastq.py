@@ -1,3 +1,4 @@
+from __future__ import print_function
 from imports import *
 import common
 
@@ -66,7 +67,7 @@ class TestFunctional( Base ):
         if kwargs.get('outdir',False):
             cmd += ['-o', kwargs.get('outdir')]
         cmd += list(*args)
-        print cmd
+        print(cmd)
         return subprocess.call( cmd )
 
     def test_runs_correctly( self ):
