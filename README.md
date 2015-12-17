@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/VDBWRAIR/bactpipeline.svg)](https://travis-ci.org/VDBWRAIR/bactpipeline)
+[![Coverage](https://coveralls.io/repos/VDBWRAIR/python_template/badge.svg)](https://coveralls.io/r/VDBWRAIR/bactpipeline)
+
 # bactpipeline
 Bacteria Pipeline modified from MRSN Bacteria Pipeline
 
