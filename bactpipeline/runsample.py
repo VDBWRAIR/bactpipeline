@@ -4,12 +4,11 @@ import argparse
 import os
 import sys
 import os.path
-from glob import glob, glob1
+from glob import glob
 import subprocess
 import re
 import itertools
 from pkg_resources import resource_filename
-
 from bactpipeline import fix_fastq
 from Bio import SeqIO
 import csv
@@ -23,12 +22,18 @@ else:
     # Python3 normalization
     xrange = range
 
+
 compose2 = lambda f, g: lambda x: f(g(x))
 compose  = lambda *f: reduce(compose2, f)
 complement = lambda f: lambda x: not f(x)
+mapcat = compose(itertools.chain.from_iterable, map)
 new_contract('readable', os.path.isfile)
 new_contract('exists', os.path.exists)
 new_contract('directory', os.path.isdir)
+SHEET_COLUMNS = ['sample_directory', 'sample_id', 'primer_file']
+SUMMARY_FILE = 'summary.tsv'
+SUMMARY_FIELDS = ['sample_id', 'length', 'contig_num', 'numreads', '%total_reads', 'total_reads', 'N50']
+SUMMARY_DELIM = '\t'
 
 def run_command(cmd, stderr=None, print_command=True):
     if print_command:
