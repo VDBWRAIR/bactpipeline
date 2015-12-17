@@ -10,7 +10,7 @@ install:
     - if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then pip install robotframework-python3; else pip install robotframework; fi
     - python setup.py install
 before_script:
-    - export PATH=$PATH:$PWD/bin
+    - export PATH=$PATH:$PWD/test:$PWD/bin
 script: 
     - nosetests --with-coverage --cover-erase --cover-package=bactpipeline
 after_success:
