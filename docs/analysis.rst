@@ -43,6 +43,21 @@ Multiple samples can be run with the --sample-sheet parameter.
 See the included samplesheet.csv in the project for the fields that are 
 required in the samplesheet.
 
+Run on Torque/SGE:
+
+.. code-block:: bash
+
+   python bactpipeline/runsample.py RunSampleSheet --outdir ldir --sample-sheet samplesheet.csv  --local-scheduler
+
+You must have luigi.cfg in your home or current directory. This file tells the pipeline where a temporary directory accessible to all nodes is and what type of software runs on the cluster (torque or SGE). n-cpu defines the number of nodes to request.
+
+.. code-block:: cfg 
+
+  [RunSampleTask]
+  shared-tmp-dir: /media/VD_Research/TMPDIR/ 
+  software: torque
+  n-cpu: 1
+
 runsample
 =========
 
