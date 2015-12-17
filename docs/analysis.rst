@@ -95,6 +95,13 @@ Output Files
 * newbler_assembly
    * gsAssembler project directory
       * See Newbler documentation about contents of this directory.
+* top_contigs.fasta
+   Contains the top 100 contigs from newbler_assembly/assembly/454AllContigs.fna
+   sorted by sequence length
+* summary.tsv
+   Summary file that contains quick easy summary to view about all the contigs
+   including their length, number of reads used to compose them, N50,
+   % of total reads from after btrim ran that compose each contig
 
 fix_fastq
 =========
