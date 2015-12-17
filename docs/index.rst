@@ -6,11 +6,15 @@
 Welcome to bactpipeline's documentation!
 ===========================================
 
+**Version**: |release|
+
 Contents:
 
 .. toctree::
-   :maxdepth: 2
-
+    :maxdepth: 2
+    
+    install
+    analysis
 
 Indices and tables
 ==================
