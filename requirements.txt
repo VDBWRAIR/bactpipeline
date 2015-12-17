@@ -1,3 +1,4 @@
 biopython
 argparse
 git+https://github.com/AndreaCensi/contracts.git
+git+https://github.com/VDBWRAIR/luigi
