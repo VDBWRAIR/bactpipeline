@@ -68,7 +68,9 @@ def main():
     args = parse_args()
     if args.sample_sheet:
         run_sample_sheet(args.sample_sheet, args.outdir, args.truseq)
-    else: run_sample( args.readdir, args.outdir, args.truseq )
+    else:
+        data = run_sample( args.readdir, args.outdir, args.truseq )
+        write_summary(data, os.path.join(args.outdir, 'summary.tsv'))
 
 def run_sample( fqdir, outdir, truseq, sample_id=None, primer_file=None ):
     fixf_o = os.path.join( outdir, 'fix_fasta' )
@@ -87,9 +89,8 @@ def run_sample( fqdir, outdir, truseq, sample_id=None, primer_file=None ):
     run_assembly( bfiles, o=projdir, primer_file=primer_file )
     sample_id = os.path.basename(os.path.normpath(fqdir)) if (not sample_id) else sample_id
     newbler_dir = os.path.join(projdir, 'assembly')
-    contig_file = os.path.join(newbler_dir, glob1(newbler_dir, '*AllContigs.fna')[0])
+    contig_file = os.path.join(newbler_dir, '454AllContigs.fna')
     summary_data = make_summary(contig_file, total_reads, sample_id)
-    #write_summary(summary_data, os.path.join(outdir, 'summary.tsv'))
     write_top_contigs(contig_file, os.path.join(outdir, 'top_contigs.fasta'), sample_id)
     return summary_data
 
@@ -137,9 +138,9 @@ def make_summary(contig_file, total_reads, sample_id, top=100):
     lengths = list(map(seqlen, recs))
     n50 = N50(lengths)
     def get_stats(rec):
-       contig_num = int(rec.id.split('contig')[-1])
-       length, numreads = map(int, re.compile(r'[^\=^\s]+=([0-9]+)').findall(rec.description))
-       return sample_id, length, contig_num, numreads, numreads/float(total_reads), n50
+        contig_num = int(rec.id.split('contig')[-1])
+        length, numreads = map(int, re.compile(r'[^\=^\s]+=([0-9]+)').findall(rec.description))
+        return sample_id, length, contig_num, numreads, numreads/float(total_reads)*100, n50
     values = map(get_stats, recs)
     return values
 

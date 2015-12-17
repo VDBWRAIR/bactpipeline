@@ -202,9 +202,27 @@ class TestFunctional(Base):
         r.wait()
         return r
 
+    def _dump_sout_serr(self, sout, serr):
+        print("STDOUT: ")
+        print(sout)
+        print("STDERR: ")
+        print(serr)
+
+    @attr('current')
+    def test_writes_summary_and_contig(self):
+        r = self._C(self.fixdir)
+        self._dump_sout_serr(*r.communicate())
+        sumfile = join('output','summary.tsv')
+        confile = join('output','top_contigs.fasta')
+        ok_(exists(sumfile), 'Did not create summary.tsv')
+        ok_(exists(confile), 'Did not create top_contigs.fasta')
+        eq_(2, len(open(confile).readlines()))
+        stats = open(sumfile).readlines()[1].split()
+        eq_(['fix_fastq','10','1','1170','100.0','9'], stats)
+
     def test_fixed_fastqfiles( self ):
         r = self._C( self.fixdir )
-        print(r.communicate())
+        self._dump_sout_serr(*r.communicate())
         outdir = join( 'output', 'fix_fasta' )
         ok_( exists(outdir), 'Did not create fix_fasta output dir' )
         rfqs = os.listdir( join('output','fix_fasta') )

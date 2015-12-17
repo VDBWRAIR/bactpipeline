@@ -12,6 +12,12 @@ if lenargs == 4:
     vtarg = sys.argv[2] # should just be -vt
     primer_file = sys.argv[3]
 
+# Make mock 454AllContigs.fna
+allcontig = "{0}/assembly/454AllContigs.fna".format(projdir)
+with open(allcontig, 'w') as fw:
+    fw.write(">contig00001  length=10   numreads=1170\n")
+    fw.write("AATTGGCCAA\n")
+
 print('''Assembly computation starting at: Wed Dec 16 15:20:43 2015  (v2.9 (20130529_1641))
 Indexing sample1_S1_L001_R1_001.fastq (with quality scores)...
   -> 1000 reads, 228722 bases.
