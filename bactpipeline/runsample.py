@@ -4,12 +4,11 @@ import argparse
 import os
 import sys
 import os.path
-from glob import glob, glob1
+from glob import glob
 import subprocess
 import re
 import itertools
 from pkg_resources import resource_filename
-
 from bactpipeline import fix_fastq
 from Bio import SeqIO
 import csv
@@ -23,12 +22,20 @@ else:
     # Python3 normalization
     xrange = range
 
+
 compose2 = lambda f, g: lambda x: f(g(x))
 compose  = lambda *f: reduce(compose2, f)
 complement = lambda f: lambda x: not f(x)
+def mapcat(func, seq):
+    return itertools.chain.from_iterable(map(func, seq))
+#mapcat = compose(itertools.chain.from_iterable, map)
 new_contract('readable', os.path.isfile)
 new_contract('exists', os.path.exists)
 new_contract('directory', os.path.isdir)
+SHEET_COLUMNS = ['sample_directory', 'sample_id', 'primer_file']
+SUMMARY_FILE = 'summary.tsv'
+SUMMARY_FIELDS = ['sample_id', 'length', 'contig_num', 'numreads', '%total_reads', 'total_reads', 'N50']
+SUMMARY_DELIM = '\t'
 
 def run_command(cmd, stderr=None, print_command=True):
     if print_command:
@@ -91,6 +98,7 @@ def run_sample( fqdir, outdir, truseq, sample_id=None, primer_file=None ):
     newbler_dir = os.path.join(projdir, 'assembly')
     contig_file = os.path.join(newbler_dir, '454AllContigs.fna')
     summary_data = make_summary(contig_file, total_reads, sample_id)
+    write_summary(summary_data, os.path.join(outdir, SUMMARY_FILE))
     write_top_contigs(contig_file, os.path.join(outdir, 'top_contigs.fasta'), sample_id)
     return summary_data
 
@@ -340,3 +348,64 @@ def parse_args( args=sys.argv[1:] ):
     )
 
     return parser.parse_args( args )
+
+import luigi
+from luigi.contrib.sge import SGEJobTask, LocalSGEJobTask
+from os.path import join
+
+class ExternalFileTask(luigi.ExternalTask):
+    file = luigi.Parameter()
+    def output(self): return luigi.LocalTarget(self.file)
+
+class RunSampleTask(SGEJobTask):
+    outdir = luigi.Parameter() # not exists
+    readdir = luigi.Parameter() # directory
+    sample_id = luigi.Parameter()
+    primer_file = luigi.Parameter(default=None)
+    local = luigi.BoolParameter()
+    base_path = luigi.Parameter()
+    truseq = luigi.Parameter() # isfile
+
+    def requires(self):
+        return ExternalFileTask(file=self.readdir)
+
+    def output(self):
+        # no way to pass summary_data in-memory
+        return luigi.LocalTarget(join(self.outdir, SUMMARY_FILE))
+
+    def work(self):
+        sys.path.append(self.base_path)
+        run_sample(self.readdir, self.outdir, self.truseq, self.sample_id, self.primer_file)
+        # get stale file handle error in run_sample
+
+parse_sheet = compose(partial(map, get(*SHEET_COLUMNS)), csv.DictReader, open)
+class RunSampleSheet(LocalSGEJobTask):
+    sample_sheet = luigi.Parameter() # readable
+    outdir = luigi.Parameter() # not exists
+    local = luigi.BoolParameter()
+
+    def requires(self):
+        sample_dirs, ids, primer_files = zip(*(parse_sheet(self.sample_sheet)))
+        outdirs = map( partial(join, self.outdir), ids)
+        sample_dirs, outdirs = map(os.path.abspath, sample_dirs), map(os.path.abspath, outdirs)
+        truseq = os.path.abspath(resource_filename(__name__, 'truseq.txt'))
+        return [RunSampleTask(base_path=os.getcwd(), truseq=truseq, local=self.local, outdir=o, readdir=rf, primer_file=pf, sample_id=id) \
+                for (o, rf, pf, id) in zip(outdirs, sample_dirs, primer_files, ids)]
+
+    def output(self):
+        def up(p): return os.path.dirname(os.path.normpath(p))
+        updir = up(up(self.outdir))
+        if updir: os.listdir(updir)
+        return luigi.LocalTarget(join(self.outdir, 'full_summary.tsv'))
+
+    def work(self):
+        data = mapcat(lambda x: csv.DictReader(x.open('r'),delimiter=SUMMARY_DELIM), self.input())
+        with self.output().open('w') as out:
+            dw = csv.DictWriter(out, SUMMARY_FIELDS)
+            dw.writeheader()
+            dw.writerows(data)
+
+if __name__ == '__main__':
+    luigi.run() 
+
+
