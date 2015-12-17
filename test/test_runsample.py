@@ -2,9 +2,12 @@ from __future__ import print_function
 from imports import *
 import common
 
+fixdir = join( dirname(__file__), 'fixtures', 'fix_fastq' )
+fqs = glob( join( fixdir, '*.fastq' ) )
+
 class Base( common.Base ):
-    fixdir = join( dirname(__file__), 'fixtures', 'fix_fastq' )
-    fqs = glob( join( fixdir, '*.fastq' ) )
+    fixdir = fixdir
+    fqs = fqs
     bnfqs = [basename(fq) for fq in fqs]
     truseq = join(dirname(TEST_DIR),'bactpipeline','truseq.txt')
     assemprojxml = join(fixdir,'454AssemblyProject.xml')
@@ -131,7 +134,6 @@ class TestUnitRunAssembly(Base):
         from bactpipeline.runsample import run_assembly
         return run_assembly( *args, **kwargs )
 
-    @attr('current')
     def test_creates_and_runs_project( self ):
         r = self._C( self.fqs )
         eq_( 0, r, 'runAssembly return non-zero' )
@@ -140,7 +142,6 @@ class TestUnitRunAssembly(Base):
         assxml = join(projdir[0],'assembly','454AssemblyProject.xml')
         ok_( exists(assxml), 'Did not create project {0}'.format(projdir) )
 
-    @attr('current')
     def test_creates_named_project( self ):
         projdir = 'projdir'
         r = self._C( self.fqs, o=projdir )
@@ -254,3 +255,18 @@ class StatsTests(unittest.TestCase):
 
     def test_n75(self):
         self.assertEquals(6,  N_stat(self.lengths, 0.75))
+
+from bactpipeline.runsample import read_count, InvalidFastqException
+@attr('current')
+class TestReadCount(common.Base):
+    def test_counts_correctly(self):
+        r = read_count(fqs)
+        self.assertEqual(2000, r)
+
+    def test_fq_file_not_4_lines_raises_error(self):
+        p = join(self.tdir, 'bad.fastq')
+        with open(p, 'w') as fw:
+            fw.write('@id1\n')
+            fw.write('ATGC\n')
+            fw.write('+\n')
+        self.assertRaises(InvalidFastqException, read_count, [p])

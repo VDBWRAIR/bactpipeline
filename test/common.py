@@ -1,7 +1,12 @@
 from __future__ import print_function
 from imports import *
 
-class Base( object ):
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
+class Base(unittest.TestCase):
     tempdir = join(TEST_DIR, 'testruns')
 
     def setUp( self ):

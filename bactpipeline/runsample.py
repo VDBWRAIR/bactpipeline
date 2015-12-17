@@ -77,9 +77,11 @@ def run_sample( fqdir, outdir, truseq, sample_id=None, primer_file=None ):
     flash_o = os.path.join( outdir, 'flash' )
     prefix = 'out'
     flasho = flash( *fixfqs, o=prefix, d=flash_o )
+    print("flash output files: {0}".format(flasho))
 
     btrim_o = os.path.join( outdir, 'btrim' )
     bfiles = btrim_files( [f for f in flasho if f.endswith('.fastq')], btrim_o, p=truseq, b=300, P=True, Q=True, S=True, l=100 )
+    print("btrim output files: {0}".format(bfiles))
     projdir = os.path.join( outdir, 'newbler_assembly' )
     total_reads = read_count(bfiles)
     run_assembly( bfiles, o=projdir, primer_file=primer_file )
@@ -153,17 +155,22 @@ def N_stat(lengths, N):
         return (sum(filter(lambda x: x >= L, lengths)) / float(sum(lengths))) >= N
     candidates = filter(is_candidate, xrange(0, sum(lengths)))
     return max(candidates)
-
 N50 = partial(N_stat, N=0.5)
-def icount(seq): return sum(1 for _ in seq)  #
-#read_count = compose(icount, partial(map, read_fasta), itertools.chain.from_iterable)
-read_count = compose(sum, partial(map, compose(icount, read_fastq, open)))#, itertools.chain.from_iterable)
 
-#def read_count(fqs):
-#    def line_count(file): return sum(1 for _ in open(file))
-#    fqs = itertools.chain(*fqs)
-#    return sum(map(line_count, fqs)) / 4
-#
+class InvalidFastqException(Exception): pass
+def read_count(fq_list):
+    ''' count number of all reads in fastq list '''
+    _sum = 0
+    for fq in fq_list:
+        fq_sum = 0
+        for line in open(fq):
+            fq_sum += 1
+        count, remainder = divmod(fq_sum, 4)
+        if remainder != 0:
+            raise InvalidFastqException
+        _sum += count
+    return _sum
+
 def run_assembly( fastqs, **options ):
     projdir = new_assembly( options.get('o',None) )
     replace_newbler_settings( projdir, fastqs )
