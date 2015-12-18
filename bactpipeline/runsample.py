@@ -357,46 +357,46 @@ class ExternalFileTask(luigi.ExternalTask):
     file = luigi.Parameter()
     def output(self): return luigi.LocalTarget(self.file)
 
-class RunSampleTask(OptionallyCluterTask):
+def get_truseq():
+    return os.path.abspath(resource_filename(__name__, 'truseq.txt'))
+
+class RunSample(OptionallyCluterTask):
     outdir = luigi.Parameter() # not exists
     readdir = luigi.Parameter() # directory
-    sample_id = luigi.Parameter()
     primer_file = luigi.Parameter(default=None)
-    local = luigi.BoolParameter()
-    base_path = luigi.Parameter()
-    truseq = luigi.Parameter() # isfile
-    software = luigi.Parameter(default=TORQUE)
+    sample_id = luigi.Parameter(default=None)
+
+    local = luigi.BoolParameter(default=False)
+    base_path = luigi.Parameter(default=os.getcwd())
+    truseq = luigi.Parameter(default=get_truseq()) # isfile
 
     def requires(self):
         return ExternalFileTask(file=self.readdir)
 
     def output(self):
         # no way to pass summary_data in-memory
-        return luigi.LocalTarget(join(self.outdir, SUMMARY_FILE))
+        return luigi.LocalTarget(os.path.abspath(join(self.outdir, SUMMARY_FILE)))
 
     def work(self):
         sys.path.append(self.base_path)
-        run_sample(self.readdir, self.outdir, self.truseq, self.sample_id, self.primer_file)
-        # get stale file handle error in run_sample
+        rd, od = map(partial(os.path.join, self.base_path), [self.readdir, self.outdir])
+        pf = None if not self.primer_file else os.path.join(self.base_path, self.primer_file)
+        run_sample(rd, od, self.truseq, self.sample_id, pf)
 
 parse_sheet = compose(partial(map, get(*SHEET_COLUMNS)), csv.DictReader, open)
 class RunSampleSheet(LocalSGEJobTask):
     sample_sheet = luigi.Parameter() # readable
     outdir = luigi.Parameter() # not exists
     local = luigi.BoolParameter()
+    truseq = luigi.Parameter(default=get_truseq()) # isfile
 
     def requires(self):
         sample_dirs, ids, primer_files = zip(*(parse_sheet(self.sample_sheet)))
         outdirs = map( partial(join, self.outdir), ids)
-        sample_dirs, outdirs = map(os.path.abspath, sample_dirs), map(os.path.abspath, outdirs)
-        truseq = os.path.abspath(resource_filename(__name__, 'truseq.txt'))
-        return [RunSampleTask(base_path=os.getcwd(), truseq=truseq, local=self.local, outdir=o, readdir=rf, primer_file=pf, sample_id=id) \
+        return [RunSample(base_path=os.getcwd(), truseq=self.truseq, local=self.local, outdir=o, readdir=rf, primer_file=pf, sample_id=id) \
                 for (o, rf, pf, id) in zip(outdirs, sample_dirs, primer_files, ids)]
 
     def output(self):
-        def up(p): return os.path.dirname(os.path.normpath(p))
-        updir = up(up(self.outdir))
-        if updir: os.listdir(updir)
         return luigi.LocalTarget(join(self.outdir, 'full_summary.tsv'))
 
     def work(self):
@@ -405,11 +405,13 @@ class RunSampleSheet(LocalSGEJobTask):
             w = csv.writer(out)
             out.write(SUMMARY_DELIM.join(SUMMARY_FIELDS)+'\n')
             for d in data: w.writerow([d[k] for k in SUMMARY_FIELDS]) #
-            #dw = csv.DictWriter(out, SUMMARY_FIELDS) #fails in py26
-            #dw.writeheader()
-            #dw.writerows(data)
 
-if __name__ == '__main__':
-    luigi.run()
+def luigi_run_sample():
+    luigi.interface.run([RunSample.__name__] + sys.argv[1:], use_dynamic_argparse=True)
 
+def luigi_run_sheet():
+    luigi.interface.run([RunSampleSheet.__name__] + sys.argv[1:], use_dynamic_argparse=True)
 
+def luigi_run():
+    return luigi.run()
+if __name__ == '__main__': luigi.run()
