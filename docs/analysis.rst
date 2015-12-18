@@ -33,15 +33,22 @@ Simply run the following command to run the pipeline on sample1's data
 
     runsample -o sample1 /home/username/reads/sample1
 
-Multiple samples can be run with the --sample-sheet parameter.
+Running multiple samples
+========================
+
+Multiple samples can be run with the ``--sample-sheet`` parameter.
 
 .. code-block:: bash
 
     ./runsample --sample-sheet samplesheet.csv -o outdir
     ./runsample -s samplesheet.csv -o outdir
 
-See the included samplesheet.csv in the project for the fields that are 
-required in the samplesheet.
+
+Sample Sheet Syntax
+-------------------
+
+.. include:: ../samplesheet.csv
+    :literal:
 
 runsample
 =========
