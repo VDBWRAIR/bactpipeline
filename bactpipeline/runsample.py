@@ -414,4 +414,3 @@ def luigi_run_sheet():
 
 def luigi_run():
     return luigi.run()
-if __name__ == '__main__': luigi.run()
