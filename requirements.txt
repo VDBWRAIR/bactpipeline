@@ -1,0 +1,3 @@
+biopython
+argparse
+git+https://github.com/AndreaCensi/contracts.git

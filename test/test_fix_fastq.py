@@ -1,3 +1,4 @@
+from __future__ import print_function
 from imports import *
 import common
 
@@ -6,7 +7,7 @@ class Base( common.Base ):
 
 class TestUnitMiSeqToNewbler( Base ):
     def _C( self, *args, **kwargs ):
-        from fix_fastq import miseq_to_newbler_id
+        from bactpipeline.fix_fastq import miseq_to_newbler_id
         return miseq_to_newbler_id( *args, **kwargs )
 
     def test_r1_correct( self ):
@@ -19,27 +20,27 @@ class TestUnitMiSeqToNewbler( Base ):
 
 class TestUnitModFqRead( Base ):
     def _C( self, *args, **kwargs ):
-        from fix_fastq import mod_fq_read
+        from bactpipeline.fix_fastq import mod_fq_read
         return mod_fq_read( *args, **kwargs )
 
     def test_mods_correctly( self ):
-        from fix_fastq import miseq_to_newbler_id as mtni
+        from bactpipeline.fix_fastq import miseq_to_newbler_id as mtni
         id = 'abcd 1'
         seq = 'ATGC'
         qual = 'IIII'
         r = self._C( id, seq, qual )
-        read = '{}\n{}\n+\n{}\n'.format(mtni(id),seq,qual)
+        read = '{0}\n{1}\n+\n{2}\n'.format(mtni(id),seq,qual)
         eq_( read, r )
 
 class TestUnitParseFq( Base ):
     def _C( self, *args, **kwargs ):
-        from fix_fastq import parse_fq
+        from bactpipeline.fix_fastq import parse_fq
         return parse_fq( *args, **kwargs )
 
     def fake_fq( self ):
         with open( 'fake.fq', 'w' ) as fh:
             for i in range( 1, 101 ):
-                fh.write( '@abcd:{} {}\n'.format( i, (i%2)+1) )
+                fh.write( '@abcd:{0} {1}\n'.format( i, (i%2)+1) )
                 fh.write( 'ACGT\n' )
                 fh.write( '+\n' )
                 fh.write( 'IIII\n' )
@@ -61,12 +62,12 @@ class TestFunctional( Base ):
         return glob( join( fixdir, '*.fastq' ) )
 
     def _C( self, *args, **kwargs ):
-        script = join( dirname( dirname( __file__ ) ), 'fix_fastq.py' )
+        script = 'fix_fastq'
         cmd = [script]
         if kwargs.get('outdir',False):
             cmd += ['-o', kwargs.get('outdir')]
         cmd += list(*args)
-        print cmd
+        print(cmd)
         return subprocess.call( cmd )
 
     def test_runs_correctly( self ):

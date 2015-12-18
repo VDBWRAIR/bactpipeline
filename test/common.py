@@ -1,10 +1,25 @@
+from __future__ import print_function
 from imports import *
 
-class Base( object ):
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
+class Base(unittest.TestCase):
+    tempdir = join(TEST_DIR, 'testruns')
+
     def setUp( self ):
-        self.tdir = tempfile.mkdtemp( suffix='test' )
+        # Ensure test tempdir exists
+        try:
+            os.mkdir(self.tempdir)
+        except OSError as e:
+            pass
+        self.tdir = tempfile.mkdtemp(suffix='test', dir=self.tempdir)
+        print(self.tdir)
         os.chdir( self.tdir )
 
     def tearDown( self ):
-        os.chdir( '/' )
-        shutil.rmtree( self.tdir )
+        pass
+        #os.chdir( '/' )
+        #shutil.rmtree( self.tdir )
