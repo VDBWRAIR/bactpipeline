@@ -47,22 +47,22 @@ Run on Torque/SGE, by samplesheet or by sample:
 
 .. code-block:: bash
 
-   python bactpipeline/runsample.py RunSampleSheet --outdir outdir --sample-sheet samplesheet.csv  --local-scheduler
+   run_bactpipeline RunSampleSheet --outdir outdir --sample-sheet samplesheet.csv  --local-scheduler
 
 This can also be run locally, with the --local tag:
 
 .. code-block:: bash
 
-   python bactpipeline/runsample.py RunSampleSheet --outdir outdir --sample-sheet samplesheet.csv  --local-scheduler --local
+   run_bactpipeline RunSampleSheet --outdir outdir --sample-sheet samplesheet.csv  --local-scheduler --local
 
-You must have luigi.cfg in your home or current directory. This file tells the pipeline where a temporary directory accessible to all nodes is and what type of software runs on the cluster (torque or SGE). n-cpu defines the number of nodes to request.
+You must have a file client.cfg in your home or current directory. This file tells the pipeline where a temporary directory accessible to all nodes is and what type of software runs on the cluster (torque or SGE). n-cpu defines the number of nodes to request; nodes the number of compute nodes.
 
 .. code-block:: cfg 
-
-  [RunSampleTask]
+  [RunSample] 
   shared-tmp-dir: /media/VD_Research/TMPDIR/ 
   software: torque
   n-cpu: 1
+  nodes: 1
 
 runsample
 =========
