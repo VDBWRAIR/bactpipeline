@@ -34,7 +34,8 @@ new_contract('exists', os.path.exists)
 new_contract('directory', os.path.isdir)
 SHEET_COLUMNS = ['sample_directory', 'sample_id', 'primer_file']
 SUMMARY_FILE = 'summary.tsv'
-SUMMARY_FIELDS = ['sample_id', 'length', 'contig_num', 'numreads', '%total_reads', 'total_reads', 'N50']
+#SUMMARY_FIELDS = ['sample_id', 'length', 'contig_num', 'numreads', '%total_reads', 'total_reads', 'N50']
+SUMMARY_FIELDS = ['sample_id', 'length', 'contig_num', 'numreads', '%total_reads', 'N50']
 SUMMARY_DELIM = '\t'
 
 def run_command(cmd, stderr=None, print_command=True):
@@ -108,8 +109,7 @@ def write_summary(data, outfile, delim='\t'): # data is 2d list
     :type data:    Iterable
     :type outfile: str,!exists
     :type delim:   str '''
-    FIELDS = ['sample_id', 'length', 'contig_num', 'numreads', '%total_reads', 'N50']
-    header = delim.join(FIELDS)
+    header = delim.join(SUMMARY_FIELDS)
     with open(outfile, 'w') as out:
         out.write(header + '\n')
         csv.writer(out, delimiter=delim).writerows(data)
@@ -350,14 +350,14 @@ def parse_args( args=sys.argv[1:] ):
     return parser.parse_args( args )
 
 import luigi
-from luigi.contrib.sge import SGEJobTask, LocalSGEJobTask
+from luigi.contrib.sge import SGEJobTask, LocalSGEJobTask, OptionallyCluterTask, TORQUE
 from os.path import join
 
 class ExternalFileTask(luigi.ExternalTask):
     file = luigi.Parameter()
     def output(self): return luigi.LocalTarget(self.file)
 
-class RunSampleTask(SGEJobTask):
+class RunSampleTask(OptionallyCluterTask):
     outdir = luigi.Parameter() # not exists
     readdir = luigi.Parameter() # directory
     sample_id = luigi.Parameter()
@@ -365,6 +365,7 @@ class RunSampleTask(SGEJobTask):
     local = luigi.BoolParameter()
     base_path = luigi.Parameter()
     truseq = luigi.Parameter() # isfile
+    software = luigi.Parameter(default=TORQUE)
 
     def requires(self):
         return ExternalFileTask(file=self.readdir)
@@ -401,11 +402,14 @@ class RunSampleSheet(LocalSGEJobTask):
     def work(self):
         data = mapcat(lambda x: csv.DictReader(x.open('r'),delimiter=SUMMARY_DELIM), self.input())
         with self.output().open('w') as out:
-            dw = csv.DictWriter(out, SUMMARY_FIELDS)
-            dw.writeheader()
-            dw.writerows(data)
+            w = csv.writer(out)
+            out.write(SUMMARY_DELIM.join(SUMMARY_FIELDS)+'\n')
+            for d in data: w.writerow([d[k] for k in SUMMARY_FIELDS]) #
+            #dw = csv.DictWriter(out, SUMMARY_FIELDS) #fails in py26
+            #dw.writeheader()
+            #dw.writerows(data)
 
 if __name__ == '__main__':
-    luigi.run() 
+    luigi.run()
 
 
