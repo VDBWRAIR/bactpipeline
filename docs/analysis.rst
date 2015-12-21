@@ -36,40 +36,39 @@ Simply run the following command to run the pipeline on sample1's data
 Running multiple samples
 ========================
 
-Multiple samples can be run with the ``--sample-sheet`` parameter.
-
-.. code-block:: bash
-
-    ./runsample --sample-sheet samplesheet.csv -o outdir
-    ./runsample -s samplesheet.csv -o outdir
-
-
 Sample Sheet Syntax
 -------------------
+
+You can build a samplesheet and run all samples in parallel
 
 .. include:: ../samplesheet.csv
     :literal:
 
-Run on Torque/SGE, by samplesheet or by sample:
+client.cfg
+----------
 
-.. code-block:: bash
+You must have a file client.cfg in your home or current directory. 
+This file tells the pipeline where a temporary directory accessible to all nodes is 
+and what type of software runs on the cluster (PBS/Torque or SGE).
 
-   run_bactpipeline RunSampleSheet --outdir outdir --sample-sheet samplesheet.csv  --local-scheduler
+n-cpu defines the number of nodes to request; nodes the number of compute nodes.
 
-This can also be run locally, with the --local tag:
+.. include:: ../client.cfg
+    :literal:
+
+Locally on one computer
+-----------------------
 
 .. code-block:: bash
 
    run_bactpipeline RunSampleSheet --outdir outdir --sample-sheet samplesheet.csv  --local-scheduler --local
 
-You must have a file client.cfg in your home or current directory. This file tells the pipeline where a temporary directory accessible to all nodes is and what type of software runs on the cluster (torque or SGE). n-cpu defines the number of nodes to request; nodes the number of compute nodes.
+PBS/Torque or SGE
+-----------------
 
-.. code-block:: cfg 
-  [RunSample] 
-  shared-tmp-dir: /media/VD_Research/TMPDIR/ 
-  software: torque
-  n-cpu: 1
-  nodes: 1
+.. code-block:: bash
+
+   run_bactpipeline RunSampleSheet --outdir outdir --sample-sheet samplesheet.csv  --local-scheduler
 
 runsample
 =========

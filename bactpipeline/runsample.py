@@ -53,32 +53,9 @@ def run_command(cmd, stderr=None, print_command=True):
         raise e
     return sout
 
-@contract
-def run_sample_sheet(f, outdir, truseq):
-    ''' run the pipeline on each sample within a csv/tsv file.
-    sample sheet must have fields sample_directory,sample_id,primer_file
-    :type f:      str,readable
-    :type outdir: str,!exists
-    :type truseq: str,readable
-    :rtype:       int
-    '''
-    os.mkdir(outdir)
-    def _run_sample(_dict):
-        indir, sample_id, primer_file = get('sample_directory', 'sample_id', 'primer_file')(_dict)
-        return run_sample(indir, os.path.join(outdir, sample_id), truseq, sample_id, primer_file)
-    sheet = csv.DictReader(open(f))
-    results = map(_run_sample, sheet)
-    summary_data = itertools.chain.from_iterable(results)
-    write_summary(summary_data, os.path.join(outdir, 'summary.tsv'))
-    return 0
-
 def main():
     args = parse_args()
-    if args.sample_sheet:
-        run_sample_sheet(args.sample_sheet, args.outdir, args.truseq)
-    else:
-        data = run_sample( args.readdir, args.outdir, args.truseq )
-        write_summary(data, os.path.join(args.outdir, 'summary.tsv'))
+    run_sample(args.readdir, args.outdir, args.truseq)
 
 def run_sample( fqdir, outdir, truseq, sample_id=None, primer_file=None ):
     fixf_o = os.path.join( outdir, 'fix_fasta' )
@@ -331,13 +308,6 @@ def parse_args( args=sys.argv[1:] ):
         '--outdir',
         default='output',
         help='The directory to put everything in for the sample[Default: %(default)s]'
-    )
-
-    parser.add_argument(
-        '-s',
-        '--sample-sheet',
-        default=None,
-        help='samplesheet here'
     )
 
     parser.add_argument(

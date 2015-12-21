@@ -219,6 +219,7 @@ class TestFunctional(Base):
         eq_(2, len(open(confile).readlines()))
         stats = open(sumfile).readlines()[1].split()
         eq_(['fix_fastq','10','1','1170','100.0','9'], stats)
+        eq_(0, r.returncode)
 
     def test_fixed_fastqfiles( self ):
         r = self._C( self.fixdir )
@@ -227,6 +228,7 @@ class TestFunctional(Base):
         ok_( exists(outdir), 'Did not create fix_fasta output dir' )
         rfqs = os.listdir( join('output','fix_fasta') )
         eq_( set([]), set(self.bnfqs) - set(rfqs) )
+        eq_(0, r.returncode)
 
     def test_flash_files( self ):
         r = self._C( self.fixdir )
@@ -236,6 +238,7 @@ class TestFunctional(Base):
         efiles = self.flash_output_files( prefix, outdir )
         for f in efiles:
             ok_( exists(f), 'Did not create flash output file {0}'.format(f) )
+        eq_(0, r.returncode)
 
     def test_btrim_files( self ):
         r = self._C( self.fixdir )
@@ -246,6 +249,7 @@ class TestFunctional(Base):
         for f in flasho:
             bfile = join(outdir,basename(f)).replace('.fastq','.btrim.fastq')
             ok_( exists(bfile), 'Did not create btrim output file {0}'.format(bfile) )
+        eq_(0, r.returncode)
 
     def test_newbler_files( self ):
         r = self._C( self.fixdir, o='output' )
@@ -256,6 +260,7 @@ class TestFunctional(Base):
         btrimo = join( 'output', 'btrim' )
         btrimfqs = glob( join(btrimo,'*.fastq') )
         self.fqs_in_xml( btrimfqs, xml )
+        eq_(0, r.returncode)
 
 from bactpipeline.runsample import N50, N_stat
 class StatsTests(unittest.TestCase):
