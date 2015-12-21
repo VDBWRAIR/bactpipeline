@@ -1,3 +1,4 @@
+client.cfg
 *.pyc
 *.log
 *.o

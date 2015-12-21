@@ -47,14 +47,21 @@ You can build a samplesheet and run all samples in parallel
 client.cfg
 ----------
 
-You must have a file client.cfg in your home or current directory. 
+You must have a file client.cfg in your home or current directory. This project
+comes with an example file(client.cfg.example) which you can copy to client.cfg
+and use.
+
 This file tells the pipeline where a temporary directory accessible to all nodes is 
 and what type of software runs on the cluster (PBS/Torque or SGE).
 
-n-cpu defines the number of nodes to request; nodes the number of compute nodes.
-
-.. include:: ../client.cfg
+.. include:: ../client.cfg.example
     :literal:
+
+* n-cpu
+   defines the number of cpus to request per sample
+
+* nodes
+   defines the number of compute nodes to use per sample
 
 Locally on one computer
 -----------------------
