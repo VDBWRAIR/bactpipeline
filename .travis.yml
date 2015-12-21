@@ -6,7 +6,7 @@ python:
 install: 
     - pip install -r requirements.txt
     - pip install -r test/requirements-dev.txt
-    - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
+    - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi 
     - if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then pip install robotframework-python3; else pip install robotframework; fi
     - python setup.py install
 before_script:

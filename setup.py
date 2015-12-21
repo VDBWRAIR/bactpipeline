@@ -31,6 +31,7 @@ setup(
     entry_points = {
         'console_scripts': [
             'runsample = bactpipeline.runsample:main',
+            'run_bactpipeline = bactpipeline.runsample:luigi_run',
             'fix_fastq = bactpipeline.fix_fastq:main',
             'flash = bactpipeline.util:flash',
             'btrim = bactpipeline.util:btrim',
