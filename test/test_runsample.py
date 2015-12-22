@@ -4,10 +4,12 @@ import common
 
 fixdir = join( dirname(__file__), 'fixtures', 'fix_fastq' )
 fqs = glob( join( fixdir, '*.fastq' ) )
+primer = join(dirname(__file__), 'primer.fasta')
 
 class Base( common.Base ):
     fixdir = fixdir
     fqs = fqs
+    primer = primer
     bnfqs = [basename(fq) for fq in fqs]
     truseq = join(dirname(TEST_DIR),'bactpipeline','truseq.txt')
     assemprojxml = join(fixdir,'454AssemblyProject.xml')
@@ -191,11 +193,14 @@ class TestUnitNewblerFastqReadFiles(Base):
         r = self._C( self.fqs )
         self.fqs_in_xml( self.fqs, r )
 
+@attr('current')
 class TestFunctional(Base):
     def _C( self, *args, **kwargs ):
         script = kwargs.get('script','runsample')
         cmd = [script]
         cmd += ['-o', kwargs.get('o','output')]
+        if kwargs.get('primer_file'):
+            cmd += ['-p', kwargs['primer_file']]
         cmd += list(args)
         print(' '.join(cmd))
         r = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -208,7 +213,6 @@ class TestFunctional(Base):
         print("STDERR: ")
         print(serr)
 
-    @attr('current')
     def test_writes_summary_and_contig(self):
         r = self._C(self.fixdir)
         self._dump_sout_serr(*r.communicate())
@@ -249,13 +253,27 @@ class TestFunctional(Base):
 
     def test_newbler_files( self ):
         r = self._C( self.fixdir, o='output' )
-        print(r.communicate())
+        sout,serr = r.communicate()
+        self._dump_sout_serr(sout, serr)
         projdir = join( 'output', 'newbler_assembly' )
         xmlp = join( projdir, 'assembly', '454AssemblyProject.xml' )
         xml = open(xmlp).read()
         btrimo = join( 'output', 'btrim' )
         btrimfqs = glob( join(btrimo,'*.fastq') )
         self.fqs_in_xml( btrimfqs, xml )
+        self.assertIn('<VectorDatabase/>', xml)
+
+    def test_ran_primer_file( self ):
+        r = self._C(self.fixdir, o='output', primer_file=primer)
+        sout,serr = r.communicate()
+        self._dump_sout_serr(sout, serr)
+        projdir = join('output', 'newbler_assembly')
+        xmlp = join(projdir, 'assembly', '454AssemblyProject.xml')
+        xml = open(xmlp).read()
+        btrimo = join('output', 'btrim')
+        btrimfqs = glob(join(btrimo,'*.fastq'))
+        self.fqs_in_xml(btrimfqs, xml)
+        self.assertIn('<VectorDatabase>{0}</VectorDatabase>'.format(primer), xml)
 
 from bactpipeline.runsample import N50, N_stat
 class StatsTests(unittest.TestCase):
@@ -275,7 +293,6 @@ class StatsTests(unittest.TestCase):
         self.assertEquals(6,  N_stat(self.lengths, 0.75))
 
 from bactpipeline.runsample import read_count, InvalidFastqException
-@attr('current')
 class TestReadCount(common.Base):
     def test_counts_correctly(self):
         r = read_count(fqs)
