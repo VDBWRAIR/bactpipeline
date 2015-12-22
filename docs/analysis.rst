@@ -79,7 +79,8 @@ Now we can run our loop over the samplesheet.csv file
         echo "cd \$PBS_O_WORKDIR; runsample -o $OUTDIR/${sn} $path" | qsub -j oe -N $sn -V; \
     done < samplesheet.csv
 
-Once all jobs are completed you can build your full reports via
+Once all jobs are completed you can build your full report and aggregate all contig
+files into a single directory named after each sample.
 
 .. code-block:: bash
 
