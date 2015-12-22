@@ -67,17 +67,26 @@ Usage
 ^^^^^
 
 * Output Directory
-   * -o or --output
+   * `-o` or `--output`
    * Specifies where to put all the resulting output directories for the various 
      stages
    * Default: output
+* primer
+   * `-p` or `--primer`
+   * Specify a primer trimming file to use for the newbler assembly. It is passed
+     using `-vt` to `runProject`
+* sample sheet
+   * `-s` or `--sample-sheet`
+   * Specify a samplesheet to parse containing your input files and primer files
+* truseq
+   * `-t` or `--truseq`
+   * Specify the path to a truseq.txt file for adapter trimming
 * readdir
    * Specifies a directory that contains the paired MiSeq reads
 
-
 .. code-block:: bash
 
-    runsample [-o|--output output] readdir
+    runsample --help
 
 Output Files
 ^^^^^^^^^^^^
