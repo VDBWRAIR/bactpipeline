@@ -50,6 +50,44 @@ Sample Sheet Syntax
 .. include:: ../samplesheet.csv
     :literal:
 
+PBS/Torque Example
+------------------
+
+Here is a quick example on how to run all your samples using the qsub command
+
+Here we are using a bash while loop to loop through all lines in the samplesheet.csv
+file to spawn a new job for each line.
+
+We use qsub's -j option to ensure standard output and standard error are joined
+into one stream.
+
+We then use qsub's -V option to ensure that your current environment gets forwarded
+on to each job. This is important as your current environment should already include
+your virtualenv's variables as well as having the newbler executables in your PATH.
+
+First we will define where all project directories will be created::
+
+    OUTDIR="outdir"
+
+Now we can run our loop over the samplesheet.csv file
+
+.. code-block:: bash
+
+    mkdir -p $OUTDIR
+    while IFS=',' read path sn primer; do \
+        [ "$sn" == "sample_id" ] && continue; \
+        echo "cd \$PBS_O_WORKDIR; runsample -o $OUTDIR/${sn} $path" | qsub -j oe -N $sn -V; \
+    done < samplesheet.csv
+
+Once all jobs are completed you can build your full reports via
+
+.. code-block:: bash
+
+    grep -h sample $OUTDIR/*/summary.tsv | head -1 > $OUTDIR/full_summary.tsv
+    grep -h -v sample $OUTDIR/*/summary.tsv >> $OUTDIR/full_summary.tsv
+    mkdir -p $OUTDIR/contigs
+    for c in $OUTDIR/*/top_contigs.fasta; do sn=$(basename $(dirname $c)); ln -s ../${sn}/top_contigs.fasta $OUTDIR/contigs/${sn}.contigs.fasta; done;
+
 runsample
 =========
 
