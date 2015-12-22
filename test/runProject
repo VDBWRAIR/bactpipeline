@@ -4,19 +4,33 @@
 from __future__ import print_function
 
 import sys
+import fileinput
 
 lenargs = len(sys.argv)
 
-projdir = sys.argv[1]
+primer_file = None
 if lenargs == 4:
-    vtarg = sys.argv[2] # should just be -vt
-    primer_file = sys.argv[3]
+    vtarg = sys.argv[1] # should just be -vt
+    primer_file = sys.argv[2]
+    projdir = sys.argv[3]
+else:
+    projdir = sys.argv[1]
 
 # Make mock 454AllContigs.fna
 allcontig = "{0}/assembly/454AllContigs.fna".format(projdir)
 with open(allcontig, 'w') as fw:
     fw.write(">contig00001  length=10   numreads=1170\n")
     fw.write("AATTGGCCAA\n")
+
+if primer_file:
+    # Add VectorDatabase with primer file specified to xml
+    assemblyxml = "{0}/assembly/454AssemblyProject.xml".format(projdir)
+    for line in fileinput.input(assemblyxml, inplace=1):
+        if 'VectorDatabase' in line:
+            sys.stdout.write('<VectorDatabase>{0}</VectorDatabase>\n'.format(primer_file))
+        else:
+            sys.stdout.write(line)
+        sys.stdout.flush()
 
 print('''Assembly computation starting at: Wed Dec 16 15:20:43 2015  (v2.9 (20130529_1641))
 Indexing sample1_S1_L001_R1_001.fastq (with quality scores)...
