@@ -177,6 +177,7 @@ def run_assembly(fastqs, **options):
     replace_newbler_settings(projdir, fastqs)
     # In case o was not in options we set it again
     cmd = ['runProject']
+    #NOTE: options must be listed before target folder.
     if options.get('primer_file'):
         cmd += ['-vt', options.get('primer_file')]
     cmd += [projdir]
