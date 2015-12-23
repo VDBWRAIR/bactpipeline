@@ -69,7 +69,7 @@ def main():
     if args.sample_sheet:
         run_sample_sheet(args.sample_sheet, args.outdir, args.truseq)
     else:
-        data = run_sample( args.readdir, args.outdir, args.truseq )
+        data = run_sample(args.readdir, args.outdir, args.truseq, primer_file=args.primer)
         write_summary(data, os.path.join(args.outdir, 'summary.tsv'))
 
 def run_sample( fqdir, outdir, truseq, sample_id=None, primer_file=None ):
@@ -172,21 +172,28 @@ def read_count(fq_list):
         _sum += count
     return _sum
 
-def run_assembly( fastqs, **options ):
-    projdir = new_assembly( options.get('o',None) )
-    replace_newbler_settings( projdir, fastqs )
+def run_assembly(fastqs, **options):
+    projdir = new_assembly(options.get('o',None))
+    replace_newbler_settings(projdir, fastqs)
     # In case o was not in options we set it again
-    cmd = ['runProject', projdir]
+    cmd = ['runProject']
+    #NOTE: options must be listed before target folder.
     if options.get('primer_file'):
         cmd += ['-vt', options.get('primer_file')]
-    out = run_command(cmd, subprocess.STDOUT)
-    if 'Usage:' in out:
-        print(out)
+    cmd += [projdir]
+    try:
+        out = run_command(cmd, subprocess.STDOUT)
+        if 'Usage:' in out:
+            print(out)
+            return 1
+        else:
+            return 0
+    except subprocess.CalledProcessError as e:
+        print("Failed to run newbler project:")
+        print(e.output)
         return 1
-    else:
-        return 0
 
-def new_assembly( projdir=None ):
+def new_assembly(projdir=None):
     cmd = ['newAssembly']
     # If project was specified then
     if projdir is not None:
@@ -325,11 +332,20 @@ def parse_args( args=sys.argv[1:] ):
         help='The directory to put everything in for the sample[Default: %(default)s]'
     )
 
-    parser.add_argument(
+    g = parser.add_mutually_exclusive_group()
+
+    g.add_argument(
         '-s',
         '--sample-sheet',
         default=None,
-        help='samplesheet here'
+        help='Path to samplesheet'
+    )
+
+    g.add_argument(
+        '-p',
+        '--primer',
+        default=None,
+        help='Path to primer fasta file'
     )
 
     parser.add_argument(
